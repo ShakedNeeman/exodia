@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aperture — Ingest</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Syne:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark"></div>
+        <div class="brand-name">ape<span>rture</span></div>
+      </div>
+      <nav class="nav">
+        <a href="browse.html">Browse</a>
+        <a class="active" href="upload.html">Ingest</a>
+      </nav>
+      <div class="top-search">
+        <span>⌕</span>
+        <input value="" placeholder="Find an in-flight session or asset" readonly />
+        <span class="kbd">⌘K</span>
+      </div>
+      <div class="top-right">
+        <span class="pill">eu-central-1 · s3</span>
+        <div class="avatar">SN</div>
+      </div>
+    </header>
+
+    <div class="shell">
+      <aside class="rail">
+        <h2>Workspace</h2>
+        <a class="rail-item active" href="upload.html"><span class="dot"></span> New ingest</a>
+        <a class="rail-item" href="browse.html"><span class="dot blue"></span> Catalog</a>
+        <div style="height:18px"></div>
+        <h2>In flight</h2>
+        <div class="rail-item"><span class="dot"></span> Orbit 12 take <span class="count">62%</span></div>
+        <div class="rail-item"><span class="dot green"></span> Lab notes <span class="count">sealed</span></div>
+        <div class="rail-item"><span class="dot mute"></span> Hangar stills <span class="count">queued</span></div>
+        <div style="height:18px"></div>
+        <h2>Collections</h2>
+        <div class="rail-item"><span class="dot violet"></span> Orbit missions</div>
+        <div class="rail-item"><span class="dot blue"></span> Lab docs</div>
+        <div class="rail-item"><span class="dot mute"></span> Unsorted</div>
+      </aside>
+
+      <main class="main">
+        <div class="page-head">
+          <div>
+            <h1>New ingest</h1>
+            <p>Metadata is saved before the first byte. Parts go to object storage. The API never sees the file.</p>
+          </div>
+          <button class="btn ghost">Drafts</button>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat"><b>3</b><span>assets in this session</span></div>
+          <div class="stat"><b>1.51 TB</b><span>planned transfer</span></div>
+          <div class="stat"><b>6,144</b><span>parts · 256 MB</span></div>
+        </div>
+
+        <div class="drop">
+          <div class="drop-icon">↑</div>
+          <strong>Drop files or a folder</strong>
+          <p>Single objects up to 50 TB. SIGMF pairs and sidecars stay one asset.</p>
+        </div>
+
+        <div class="queue">
+          <div class="queue-head">
+            <span></span>
+            <span>Asset</span>
+            <span>Size / plan</span>
+            <span class="hide-sm">Transfer</span>
+            <span class="hide-sm">Integrity</span>
+            <span></span>
+          </div>
+
+          <div class="q-row selected" data-file="orbit">
+            <span class="dot"></span>
+            <div>
+              <div class="file-name">Orbit 12 — X-band take</div>
+              <div class="file-sub">orbit-12.sigmf-data + sidecar</div>
+              <div class="bar"><i style="width:62%"></i></div>
+            </div>
+            <div>
+              <div>1.50 TB</div>
+              <div class="file-sub">256 MB · 6,144 parts</div>
+            </div>
+            <div class="hide-sm">
+              <div>62% · 187 MB/s</div>
+              <div class="file-sub">part 3,812 / 6,144 · ETA 2h 11m</div>
+            </div>
+            <div class="hide-sm"><span class="badge run">uploading</span></div>
+            <div class="right"><button class="btn">Pause</button></div>
+          </div>
+
+          <div class="q-row" data-file="notes">
+            <span class="dot green"></span>
+            <div>
+              <div class="file-name">Lab notes — week 43</div>
+              <div class="file-sub">lab-notes-w43.pdf</div>
+              <div class="bar ok"><i style="width:100%"></i></div>
+            </div>
+            <div>
+              <div>18.4 MB</div>
+              <div class="file-sub">16 MB · 2 parts</div>
+            </div>
+            <div class="hide-sm">
+              <div>100% · sealed</div>
+              <div class="file-sub">object raw/2026/10/ast_2F/…</div>
+            </div>
+            <div class="hide-sm"><span class="badge ok">checksum ok</span></div>
+            <div class="right"><span class="badge mute">enriching</span></div>
+          </div>
+
+          <div class="q-row" data-file="stills">
+            <span class="dot mute"></span>
+            <div>
+              <div class="file-name">Hangar stills</div>
+              <div class="file-sub">12 images · set</div>
+              <div class="bar warn"><i style="width:0%"></i></div>
+            </div>
+            <div>
+              <div>840 MB</div>
+              <div class="file-sub">16 MB · 53 parts</div>
+            </div>
+            <div class="hide-sm">
+              <div>waiting on metadata</div>
+              <div class="file-sub">collection required</div>
+            </div>
+            <div class="hide-sm"><span class="badge wait">draft</span></div>
+            <div class="right"><button class="btn primary">Start</button></div>
+          </div>
+        </div>
+        <p class="hint">Resume state is in Postgres and in IndexedDB. Closing this tab does not restart a terabyte.</p>
+      </main>
+
+      <aside class="inspector">
+        <h2>User metadata</h2>
+        <p class="muted" style="margin:0 0 14px;font-size:12px">Committed on session create. Technical metadata arrives after seal.</p>
+
+        <div class="field">
+          <label>Collection</label>
+          <select>
+            <option>Orbit missions</option>
+            <option>Lab docs</option>
+            <option>Unsorted</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Title</label>
+          <input id="title" value="Orbit 12 — X-band take" />
+        </div>
+        <div class="field">
+          <label>Description</label>
+          <textarea>Night pass, X-band. Pair with orbit-12.sigmf-meta. Do not downsample.</textarea>
+        </div>
+        <div class="field">
+          <label>Tags</label>
+          <div class="chips">
+            <span class="chip accent">x-band</span>
+            <span class="chip accent">orbit-12</span>
+            <span class="chip accent">night</span>
+            <span class="chip">+ add</span>
+          </div>
+        </div>
+        <div class="kv">
+          <div class="field">
+            <label>Platform</label>
+            <input value="UAV-7" />
+          </div>
+          <div class="field">
+            <label>Sensor</label>
+            <input value="X-SAR" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Original path</label>
+          <input value="/mnt/storage3/orbit/12/raw/" />
+        </div>
+
+        <h2 style="margin-top:18px">Session</h2>
+        <div class="tech">
+          <div><span>asset</span><b>ast_8K1</b></div>
+          <div><span>session</span><b>upl_44c</b></div>
+          <div><span>part size</span><b>256 MiB</b></div>
+          <div><span>checksum</span><b>CRC64-NVME</b></div>
+          <div><span>plane</span><b>client → s3</b></div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:16px">
+          <button class="btn primary" style="flex:1">Save metadata</button>
+          <button class="btn danger">Abort</button>
+        </div>
+      </aside>
+    </div>
+    <footer class="status">
+      <span>control plane <b>catalog-api</b></span>
+      <span>data plane <b>s3://aperture-raw</b></span>
+      <span>session <b>upl_44c</b></span>
+      <span>parts sealed <b>3,812 / 6,144</b></span>
+    </footer>
+  </div>
+  <script>
+    const titles = {
+      orbit: "Orbit 12 — X-band take",
+      notes: "Lab notes — week 43",
+      stills: "Hangar stills"
+    };
+    document.querySelectorAll(".q-row").forEach((row) => {
+      row.addEventListener("click", (event) => {
+        if (event.target.closest("button")) return;
+        document.querySelectorAll(".q-row").forEach((r) => r.classList.remove("selected"));
+        row.classList.add("selected");
+        document.getElementById("title").value = titles[row.dataset.file];
+      });
+    });
+  </script>
+</body>
+</html>

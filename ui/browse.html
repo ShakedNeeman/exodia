@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aperture — Browse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Syne:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark"></div>
+        <div class="brand-name">ape<span>rture</span></div>
+      </div>
+      <nav class="nav">
+        <a class="active" href="browse.html">Browse</a>
+        <a href="upload.html">Ingest</a>
+      </nav>
+      <div class="top-search">
+        <span>⌕</span>
+        <input value="x-band orbit" readonly />
+        <span class="kbd">⌘K</span>
+      </div>
+      <div class="top-right">
+        <span class="pill">2.4M assets · 74.1 TB</span>
+        <div class="avatar">SN</div>
+      </div>
+    </header>
+
+    <div class="shell">
+      <aside class="rail">
+        <h2>Collections</h2>
+        <div class="rail-item active"><span class="dot"></span> Orbit missions <span class="count">418</span></div>
+        <div class="rail-item"><span class="dot blue"></span> Lab docs <span class="count">12.4k</span></div>
+        <div class="rail-item"><span class="dot violet"></span> Hangar media <span class="count">86k</span></div>
+        <div class="rail-item"><span class="dot green"></span> Ground truth <span class="count">2.1k</span></div>
+        <div class="rail-item"><span class="dot mute"></span> Unsorted <span class="count">307</span></div>
+        <div style="height:18px"></div>
+        <h2>Saved views</h2>
+        <div class="rail-item">Night X-band</div>
+        <div class="rail-item">Needs extractor</div>
+        <div class="rail-item">Last 7 days</div>
+      </aside>
+
+      <main class="main">
+        <div class="page-head">
+          <div>
+            <h1>Orbit missions</h1>
+            <p>Logical browse. Path is a facet, not the product.</p>
+          </div>
+          <a class="btn primary" href="upload.html">Ingest</a>
+        </div>
+
+        <div class="toolbar">
+          <div class="facets">
+            <span class="chip on">family: radar.sigmf</span>
+            <span class="chip on">tag: x-band</span>
+            <span class="chip">state: ready</span>
+            <span class="chip">time: 90d</span>
+            <span class="chip">size: > 1 GB</span>
+          </div>
+          <div class="seg">
+            <button class="on" id="btn-grid">Grid</button>
+            <button id="btn-list">List</button>
+          </div>
+        </div>
+
+        <section class="grid" id="grid">
+          <article class="card selected" data-id="orbit">
+            <div class="thumb radar"><span class="badge run tag">radar.sigmf</span></div>
+            <div class="card-body">
+              <h3>Orbit 12 — X-band take</h3>
+              <div class="meta">1.50 TB · UAV-7 · ready</div>
+            </div>
+          </article>
+          <article class="card" data-id="orbit11">
+            <div class="thumb radar"><span class="badge run tag">radar.sigmf</span></div>
+            <div class="card-body">
+              <h3>Orbit 11 — descending</h3>
+              <div class="meta">980 GB · UAV-7 · ready</div>
+            </div>
+          </article>
+          <article class="card" data-id="video">
+            <div class="thumb video">
+              <span class="badge wait tag">video</span>
+              <div class="play">▶</div>
+            </div>
+            <div class="card-body">
+              <h3>Approach reel 12</h3>
+              <div class="meta">4.1 GB · 00:18:22 · enriching</div>
+            </div>
+          </article>
+          <article class="card" data-id="doc">
+            <div class="thumb doc"><span class="badge tag">document</span></div>
+            <div class="card-body">
+              <h3>Lab notes — week 43</h3>
+              <div class="meta">18.4 MB · pdf · partial</div>
+            </div>
+          </article>
+          <article class="card" data-id="img">
+            <div class="thumb image"><span class="badge tag">image</span></div>
+            <div class="card-body">
+              <h3>Hangar north, dusk</h3>
+              <div class="meta">24 MP · 14.2 MB · ready</div>
+            </div>
+          </article>
+          <article class="card" data-id="unknown">
+            <div class="thumb unknown"><span class="badge mute tag">unknown</span></div>
+            <div class="card-body">
+              <h3>payload.bin</h3>
+              <div class="meta">220 MB · user tags only</div>
+            </div>
+          </article>
+        </section>
+
+        <section class="list hidden" id="list">
+          <div class="list-row selected" data-id="orbit">
+            <span class="dot"></span>
+            <div><div class="file-name">Orbit 12 — X-band take</div><div class="file-sub">radar.sigmf</div></div>
+            <div>1.50 TB</div>
+            <div>UAV-7</div>
+            <div>x-band · night</div>
+            <div><span class="badge ok">ready</span></div>
+          </div>
+          <div class="list-row" data-id="orbit11">
+            <span class="dot"></span>
+            <div><div class="file-name">Orbit 11 — descending</div><div class="file-sub">radar.sigmf</div></div>
+            <div>980 GB</div>
+            <div>UAV-7</div>
+            <div>x-band</div>
+            <div><span class="badge ok">ready</span></div>
+          </div>
+          <div class="list-row" data-id="video">
+            <span class="dot blue"></span>
+            <div><div class="file-name">Approach reel 12</div><div class="file-sub">video</div></div>
+            <div>4.1 GB</div>
+            <div>—</div>
+            <div>orbit-12</div>
+            <div><span class="badge run">enriching</span></div>
+          </div>
+          <div class="list-row" data-id="unknown">
+            <span class="dot mute"></span>
+            <div><div class="file-name">payload.bin</div><div class="file-sub">unknown</div></div>
+            <div>220 MB</div>
+            <div>—</div>
+            <div>orbit-12</div>
+            <div><span class="badge mute">unknown</span></div>
+          </div>
+        </section>
+      </main>
+
+      <aside class="inspector" id="inspector">
+        <h2>Asset</h2>
+        <div class="preview thumb radar"></div>
+        <h3 style="margin:0 0 4px;font-size:16px" id="iname">Orbit 12 — X-band take</h3>
+        <div class="meta" id="isub">ast_8K1 · Orbit missions · 31 Oct 2026</div>
+        <div class="chips" style="margin:12px 0">
+          <span class="chip accent">x-band</span>
+          <span class="chip accent">orbit-12</span>
+          <span class="chip accent">night</span>
+        </div>
+
+        <h2>User metadata</h2>
+        <div class="tech" style="margin-bottom:14px">
+          <div><span>platform</span><b>UAV-7</b></div>
+          <div><span>sensor</span><b>X-SAR</b></div>
+          <div><span>path</span><b>/mnt/storage3/orbit/12</b></div>
+        </div>
+
+        <h2>Technical metadata</h2>
+        <div class="tech" id="itech">
+          <div><span>extractor.detect</span><b class="okish">ok</b></div>
+          <div><span>family</span><b>radar.sigmf</b></div>
+          <div><span>sample_rate</span><b>200 MS/s</b></div>
+          <div><span>center_hz</span><b>9.6 GHz</b></div>
+          <div><span>duration</span><b>412.4 s</b></div>
+          <div><span>extractor.sigmf</span><b>ok</b></div>
+          <div><span>sha-256</span><b>a91c…e02</b></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:16px">
+          <button class="btn primary" style="flex:1">Open preview</button>
+          <button class="btn">Download</button>
+        </div>
+      </aside>
+    </div>
+    <footer class="status">
+      <span>index lag <b>1.2s</b></span>
+      <span>open search <b>healthy</b></span>
+      <span>acl <b>orbit-missions / editor</b></span>
+      <span>estate <b>74.1 TB</b></span>
+    </footer>
+  </div>
+  <script>
+    const details = {
+      orbit: {
+        name: "Orbit 12 — X-band take",
+        sub: "ast_8K1 · Orbit missions · 31 Oct 2026",
+        thumb: "radar",
+        tech: [
+          ["extractor.detect", "ok"],
+          ["family", "radar.sigmf"],
+          ["sample_rate", "200 MS/s"],
+          ["center_hz", "9.6 GHz"],
+          ["duration", "412.4 s"],
+          ["extractor.sigmf", "ok"],
+          ["sha-256", "a91c…e02"]
+        ]
+      },
+      orbit11: {
+        name: "Orbit 11 — descending",
+        sub: "ast_7Q2 · Orbit missions · 28 Oct 2026",
+        thumb: "radar",
+        tech: [
+          ["extractor.detect", "ok"],
+          ["family", "radar.sigmf"],
+          ["sample_rate", "200 MS/s"],
+          ["center_hz", "9.6 GHz"],
+          ["duration", "268.0 s"]
+        ]
+      },
+      video: {
+        name: "Approach reel 12",
+        sub: "ast_3M8 · Orbit missions · enriching",
+        thumb: "video",
+        tech: [
+          ["extractor.detect", "ok"],
+          ["family", "video"],
+          ["codec", "h264"],
+          ["ffprobe", "running"],
+          ["poster", "queued"]
+        ]
+      },
+      doc: {
+        name: "Lab notes — week 43",
+        sub: "ast_2F · Lab docs · partial",
+        thumb: "doc",
+        tech: [
+          ["extractor.detect", "ok"],
+          ["family", "document"],
+          ["pages", "14"],
+          ["tika", "ok"],
+          ["pdf_page", "failed"]
+        ]
+      },
+      img: {
+        name: "Hangar north, dusk",
+        sub: "ast_9A · Hangar media · ready",
+        thumb: "image",
+        tech: [
+          ["extractor.detect", "ok"],
+          ["family", "image"],
+          ["width", "6000"],
+          ["height", "4000"],
+          ["camera", "A7R V"]
+        ]
+      },
+      unknown: {
+        name: "payload.bin",
+        sub: "ast_0U · Orbit missions · unknown is a type",
+        thumb: "unknown",
+        tech: [
+          ["extractor.detect", "ok"],
+          ["family", "unknown"],
+          ["mime", "application/octet-stream"],
+          ["magic", "7f 45 4c 46"],
+          ["extractors", "skipped"]
+        ]
+      }
+    };
+
+    const inspector = document.getElementById("inspector");
+    function show(id) {
+      const item = details[id];
+      if (!item) return;
+      document.getElementById("iname").textContent = item.name;
+      document.getElementById("isub").textContent = item.sub;
+      const preview = inspector.querySelector(".preview");
+      preview.className = "preview thumb " + item.thumb;
+      document.getElementById("itech").innerHTML = item.tech
+        .map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`)
+        .join("");
+    }
+
+    function bind(selector) {
+      document.querySelectorAll(selector).forEach((el) => {
+        el.addEventListener("click", () => {
+          document.querySelectorAll(selector).forEach((n) => n.classList.remove("selected"));
+          el.classList.add("selected");
+          show(el.dataset.id);
+        });
+      });
+    }
+    bind(".card");
+    bind(".list-row");
+
+    const grid = document.getElementById("grid");
+    const list = document.getElementById("list");
+    document.getElementById("btn-grid").onclick = () => {
+      grid.classList.remove("hidden");
+      list.classList.add("hidden");
+      document.getElementById("btn-grid").classList.add("on");
+      document.getElementById("btn-list").classList.remove("on");
+    };
+    document.getElementById("btn-list").onclick = () => {
+      list.classList.remove("hidden");
+      grid.classList.add("hidden");
+      document.getElementById("btn-list").classList.add("on");
+      document.getElementById("btn-grid").classList.remove("on");
+    };
+
+    document.querySelectorAll(".facets .chip").forEach((chip) => {
+      chip.addEventListener("click", () => chip.classList.toggle("on"));
+    });
+  </script>
+</body>
+</html>
