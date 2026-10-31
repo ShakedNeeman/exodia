@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aperture — End-to-end flow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Syne:wght@700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0c0e12;
+      --elev: #13171d;
+      --soft: #1a2028;
+      --line: #2a3340;
+      --text: #eef2f6;
+      --muted: #8d98a6;
+      --faint: #6b7582;
+      --accent: #f0a14a;
+      --accent-dim: #3d2a14;
+      --signal: #3ddc97;
+      --signal-dim: #123528;
+      --blue: #7eb6ff;
+      --blue-dim: #173047;
+      --rose: #f07167;
+      --rose-dim: #3a1b1a;
+      --sans: "IBM Plex Sans", sans-serif;
+      --display: "Syne", "IBM Plex Sans", sans-serif;
+      --mono: "IBM Plex Mono", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); }
+    body { font-size: 15px; line-height: 1.55; }
+    a { color: var(--accent); text-decoration: none; }
+    .top {
+      display: flex; align-items: center; gap: 18px;
+      padding: 14px 22px; border-bottom: 1px solid var(--line);
+    }
+    .brand { display: flex; align-items: center; gap: 8px; font-family: var(--display); font-weight: 700; }
+    .brand span { color: var(--accent); }
+    .mark { width: 16px; height: 16px; border: 1.5px solid var(--accent); border-radius: 99px; position: relative; }
+    .mark::after { content: ""; position: absolute; inset: 3px; border: 1.5px solid var(--accent); border-radius: 99px; }
+    .nav a { color: var(--muted); margin-right: 12px; }
+    .nav a.active { color: var(--text); }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 28px 20px 72px; }
+    h1 { font-family: var(--display); font-size: 34px; letter-spacing: -0.04em; margin: 0 0 8px; }
+    .lead { color: var(--muted); max-width: 52em; margin: 0 0 20px; }
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    .tabs button {
+      background: var(--elev); border: 1px solid var(--line); color: var(--muted);
+      border-radius: 999px; padding: 7px 12px; cursor: pointer; font: inherit;
+    }
+    .tabs button.on { color: var(--text); border-color: #6a4a20; background: var(--accent-dim); }
+    .hidden { display: none !important; }
+
+    .stage { background: var(--elev); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+    .diagram { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
+    @media (max-width: 800px) { .diagram { grid-template-columns: 1fr 1fr; } }
+    .box {
+      border: 1px solid var(--line); background: #10141a; border-radius: 12px;
+      padding: 10px 12px; min-height: 74px; transition: border-color .25s, background .25s;
+    }
+    .box small { display: block; color: var(--faint); font-size: 12px; }
+    .box b { display: block; }
+    .box.on { border-color: var(--accent); background: var(--accent-dim); }
+    .box.bytes.on { border-color: var(--signal); background: var(--signal-dim); }
+
+    .lane { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 12px; }
+    .pkt {
+      border-radius: 999px; padding: 3px 9px; border: 1px solid var(--line);
+      font-family: var(--mono); font-size: 11px; color: var(--muted);
+    }
+    .pkt.meta { color: var(--accent); border-color: #6a4a20; background: var(--accent-dim); }
+    .pkt.file { color: var(--signal); border-color: #1f5a40; background: var(--signal-dim); }
+    .pkt.job { color: var(--blue); border-color: #2a4d6d; background: var(--blue-dim); }
+
+    .narr { background: #10141a; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+    .kicker { color: var(--accent); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+    .narr h2 { margin: 4px 0 10px; font-size: 22px; letter-spacing: -0.02em; }
+    .cols { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    @media (max-width: 900px) { .cols { grid-template-columns: 1fr; } }
+    .panel { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: #0e1218; }
+    .panel h3 { margin: 0 0 6px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); font-weight: 500; }
+    .panel p, .panel li { margin: 0 0 6px; color: #d7dee6; font-size: 13.5px; }
+    .panel.why { border-color: #6a4a20; }
+    .panel.why h3 { color: var(--accent); }
+    .panel.concern { border-color: #2a4d6d; }
+    .panel.concern h3 { color: var(--blue); }
+
+    .controls { display: flex; align-items: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+    .controls button {
+      background: var(--soft); border: 1px solid var(--line); color: var(--text);
+      border-radius: 10px; padding: 8px 12px; cursor: pointer; font: inherit;
+    }
+    .controls button.primary { background: var(--accent); color: #1a1208; border-color: #d48a30; font-weight: 600; }
+    .bar { flex: 1; min-width: 140px; height: 6px; background: #2a313b; border-radius: 99px; overflow: hidden; }
+    .bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .3s; }
+    .count { font-family: var(--mono); font-size: 12px; color: var(--faint); }
+    .dots { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 10px; }
+    .dots button { width: 10px; height: 10px; padding: 0; border-radius: 99px; border: 0; background: #3a4656; cursor: pointer; }
+    .dots button.on { background: var(--accent); }
+    .hint { color: var(--faint); font-size: 12px; margin: 10px 2px 0; }
+
+    .card { background: var(--elev); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; margin: 12px 0; }
+    .card h3 { margin: 0 0 8px; font-size: 17px; }
+    .card p, .card li { color: #d7dee6; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { text-align: left; border-bottom: 1px solid var(--line); padding: 8px 6px; vertical-align: top; }
+    th { color: var(--faint); font-weight: 500; }
+    code { font-family: var(--mono); font-size: .9em; color: #f0c14a; }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="brand"><div class="mark"></div>ape<span>rture</span></div>
+    <nav class="nav">
+      <a href="index.html">Home</a>
+      <a class="active" href="flow.html">Flow</a>
+      <a href="upload.html">Ingest</a>
+      <a href="browse.html">Browse</a>
+    </nav>
+  </header>
+
+  <div class="wrap">
+    <h1>End-to-end flow</h1>
+    <p class="lead">
+      Walk this in a review. Each step says what moves, why I chose it, and the concern I would raise myself.
+      Example file: a 1.5&nbsp;TB SIGMF radar take plus its sidecar.
+    </p>
+
+    <div class="tabs">
+      <button class="on" data-tab="walk">1. The walkthrough</button>
+      <button data-tab="why">2. Why this stack</button>
+      <button data-tab="concerns">3. Concerns I would raise</button>
+    </div>
+
+    <section id="tab-walk">
+      <div class="stage">
+        <div class="diagram">
+          <div class="box" id="b-client"><b>Browser</b><small>UI + part planner</small></div>
+          <div class="box" id="b-api"><b>Catalog API</b><small>Spring · control plane</small></div>
+          <div class="box" id="b-pg"><b>Postgres</b><small>source of truth</small></div>
+          <div class="box" id="b-s3"><b>S3 / MinIO</b><small>bytes only</small></div>
+          <div class="box" id="b-redis"><b>Redis</b><small>live progress</small></div>
+          <div class="box" id="b-sqs"><b>SQS</b><small>work mailbox</small></div>
+          <div class="box" id="b-work"><b>Workers</b><small>Python · files</small></div>
+          <div class="box" id="b-os"><b>OpenSearch</b><small>search projection</small></div>
+        </div>
+        <div class="lane" id="lane"></div>
+        <div class="narr" id="narr"></div>
+        <div class="controls">
+          <button id="prev">Previous</button>
+          <button class="primary" id="play">Play</button>
+          <button id="next">Next</button>
+          <div class="bar"><i id="bar"></i></div>
+          <span class="count" id="count">1 / 12</span>
+        </div>
+        <div class="dots" id="dots"></div>
+      </div>
+      <p class="hint">Amber path = metadata JSON. Green path = file bytes. Those two roads never share a process.</p>
+    </section>
+
+    <section id="tab-why" class="hidden">
+      <div class="card">
+        <h3>The stack, and the alternative I refused</h3>
+        <table>
+          <tr><th>Layer</th><th>Choice</th><th>Why</th><th>Concern if I picked the other thing</th></tr>
+          <tr><td>Bytes</td><td>S3, MinIO on-prem</td><td>Multipart, checksums, 50&nbsp;TB objects, IAM</td><td>A disk on the API host dies in week one of terabyte ingest</td></tr>
+          <tr><td>Upload</td><td>Presigned multipart from the browser</td><td>S3 already has the protocol. We must not proxy terabytes</td><td>tus through our servers still makes us the pipe</td></tr>
+          <tr><td>Catalog</td><td>Java 21 / Spring Boot</td><td>Transactional metadata, auth, boring on purpose</td><td>A byte-oriented service is the wrong shape for a catalog</td></tr>
+          <tr><td>Truth</td><td>PostgreSQL</td><td>Asset → collection → ACL is relational</td><td>Mongo or “search-only” loses constraints and rebuilds become outages</td></tr>
+          <tr><td>Search</td><td>OpenSearch as a projection</td><td>Facets over millions of mixed files</td><td>Postgres full-text is fine for thousands, not this UI</td></tr>
+          <tr><td>Workers</td><td>Python plugins</td><td>exif / ffprobe / Tika / SIGMF / GDAL live here</td><td>One giant <code>if mime</code> means every new format is a full release</td></tr>
+          <tr><td>Queue</td><td>SQS (RabbitMQ on-prem)</td><td>Upload complete must survive a worker crash</td><td>A direct HTTP call to a worker ties ingest to a 2&nbsp;TB spectrogram</td></tr>
+          <tr><td>Progress</td><td>Redis + Postgres ledger</td><td>Redis is the whiteboard. Postgres is the resume journal</td><td>Browser memory as the only resume state restarts a night-long job</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="tab-concerns" class="hidden">
+      <div class="card">
+        <h3>Concerns I would put on the table myself</h3>
+        <p>These are the objections I expect, and the answer I would give. Raise them. Do not wait to be asked.</p>
+      </div>
+      <div class="card">
+        <h3>1. This looks like a lot of boxes</h3>
+        <p><b>Concern.</b> For a first version, Redis, OpenSearch, SQS, and a plugin worker farm feel heavy.</p>
+        <p><b>What I would ship first.</b> Three things only: presigned multipart to S3, Postgres as the catalog, and one async worker after seal. Redis is a live percentage. OpenSearch can wait until facet search hurts. SQS can start as “S3 event → worker”. The boxes are the production shape, not the day-one install.</p>
+      </div>
+      <div class="card">
+        <h3>2. Why not stream the file through the API? Or use tus?</h3>
+        <p><b>Concern.</b> A single upload endpoint is simpler to write and to debug.</p>
+        <p><b>Answer.</b> A 2&nbsp;TB PUT through Spring is a second copy, a memory profile I do not want, and a scaling axis tied to the API NIC. tus is a good protocol on the wrong hop. If tus sits in front of S3, we are still the pipe. Signing a URL is a metadata operation. Uploading 256&nbsp;MB is a byte operation. They should not share a process.</p>
+      </div>
+      <div class="card">
+        <h3>3. Does S3 manage the “transaction”? The video? The parts?</h3>
+        <p><b>Concern.</b> Easy to confuse multipart with a database transaction, or S3 with a video platform.</p>
+        <p><b>Answer.</b> S3 is a blob store. A radar take, a PDF, and a movie are the same thing to it: bytes plus a key. It does not transcode, it does not play video, and it does not run <code>BEGIN/COMMIT</code>. Multipart is an API we drive: we start it, we upload parts, we call Complete or Abort. S3 stores the parts and, on Complete, concatenates them. If we never Complete, the parts sit there and cost money until a lifecycle rule aborts them. That is not a rollback.</p>
+      </div>
+      <div class="card">
+        <h3>4. 10,000-part limit and abandoned uploads</h3>
+        <p><b>Concern.</b> 8&nbsp;MB parts on a 4&nbsp;TB file is 524,288 parts — illegal. Incomplete multiparts leak spend.</p>
+        <p><b>Answer.</b> Part size is adaptive so we stay under ~8,000 of the 10,000 cap. A 14-day AbortIncompleteMultipartUpload rule is mandatory. Resume is a protocol in Postgres, not a UI trick, so people actually finish instead of starting a second MPU.</p>
+      </div>
+      <div class="card">
+        <h3>5. Metadata after upload never happens</h3>
+        <p><b>Concern.</b> “Upload first, form later” is the default product instinct.</p>
+        <p><b>Answer.</b> The form is never later. A 12-hour transfer that dies at 90% still needs a name, a mission, and tags. S3 object tags are capped at roughly 10 tags and 2&nbsp;KB — unusable as a catalog. User metadata is committed in <code>draft</code>. Technical metadata is a different document and is allowed to arrive late.</p>
+      </div>
+      <div class="card">
+        <h3>6. One HTTP file ≠ one catalog row</h3>
+        <p><b>Concern.</b> Why not one row per blob, or zip the set at ingest?</p>
+        <p><b>Answer.</b> SIGMF is one thing to a person and two objects in storage. Zip destroys range reads and doubles CPU. Grouping in the UI only means every client re-solves the same problem. <code>asset</code> is what people browse. <code>asset_object</code> is what storage holds.</p>
+      </div>
+      <div class="card">
+        <h3>7. Enrichment cannot be allowed to hide the file</h3>
+        <p><b>Concern.</b> “Processing failed” becoming “file missing” is how catalogs go dishonest. A closed parser list will be wrong next month.</p>
+        <p><b>Answer.</b> The brief says the data is diverse and that we enrich <i>where possible</i>. Those two sentences forbid a closed list and forbid blocking download on a parser. Unknown is a type. <code>partial</code> is a type. The raw object is downloadable at <code>uploaded</code>.</p>
+      </div>
+      <div class="card">
+        <h3>8. Search engines are bad sources of truth</h3>
+        <p><b>Concern.</b> Why pay for Postgres and OpenSearch?</p>
+        <p><b>Answer.</b> Faceted browse needs an inverted index. Asset state, ACLs, and size totals need a database that does not lose a write during a reindex. I have seen “Elasticsearch-only” turn a rebuild into an outage. Detail by id always hits Postgres. Facets hit OpenSearch. The index is rebuildable.</p>
+      </div>
+      <div class="card">
+        <h3>9. At-least-once workers and poison extractors</h3>
+        <p><b>Concern.</b> SQS can deliver twice. A 2&nbsp;TB spectrogram can OOM a box and retry forever.</p>
+        <p><b>Answer.</b> Extractors are idempotent. Video and radar do not share a queue. After N failures the extractor is quarantined; the asset stays <code>uploaded</code>. Visibility timeout matches the job, not a 30-second HTTP call.</p>
+      </div>
+      <div class="card">
+        <h3>10. Integrity, ETags, and “trust TCP”</h3>
+        <p><b>Concern.</b> Multipart ETags are not MD5 of the file. Treating them as a content hash is a lie.</p>
+        <p><b>Answer.</b> Part checksums on the storage API (CRC64-NVME / CRC32C). Complete fails closed. A content id (SHA-256) is computed asynchronously after seal. We do not block download on the slow hash.</p>
+      </div>
+      <div class="card">
+        <h3>11. Browse as a filesystem will recreate the current mess</h3>
+        <p><b>Concern.</b> Users will ask for their old folders back.</p>
+        <p><b>Answer.</b> We ingest the original path as a facet. We do not make POSIX the product. Tens of terabytes of <code>/mnt/storage3/newnew_final/</code> is why this system exists. Navigation is collections + facets + saved views. Tags-only is too weak: tags drift, collections have owners and ACLs.</p>
+      </div>
+      <div class="card">
+        <h3>12. Cost, deletes, and restricted radar</h3>
+        <p><b>Concern.</b> Derivatives can silently double the estate. A hard-delete of a 4&nbsp;TB take is unrecoverable. Some files cannot leave the building.</p>
+        <p><b>Answer.</b> Derivatives are capped (one poster, one spectrogram, one PDF page, two image sizes). Catalog delete is a state change; storage expires later. The storage interface is the S3 API, so a restricted collection can sit on MinIO behind the same catalog.</p>
+      </div>
+    </section>
+  </div>
+
+<script>
+const scenes = [
+  {
+    on: [],
+    lane: '<span class="pkt">No bytes have left the laptop yet</span>',
+    kicker: "Step 0 · Setup",
+    title: "The file is 1.5 TB. The catalog does not know it exists.",
+    what: "User drops <code>orbit-12.sigmf-data</code> plus the 18 KB sidecar, picks collection Orbit missions, tags <code>x-band</code> / <code>night</code>, sensor X-SAR. The browser plans 256&nbsp;MB parts (6,144 of them) and a checksum algorithm. Still zero file bytes on the wire.",
+    why: "I start from a real size, not a 12&nbsp;MB demo. If the design works here, a PDF is free. I also treat the sidecar as part of the same asset from the first click — that is decision 2 in the repo.",
+    concern: "If we designed against small files and ‘scaled later’, multipart, resume, and range reads would be bolted on. They have to be the default, not an afterthought."
+  },
+  {
+    on: ["b-client", "b-api"],
+    lane: '<span class="pkt meta">POST /v1/uploads · JSON only</span> browser → API. No file body.',
+    kicker: "Step 1 · Intent",
+    title: "Metadata first. Bytes later.",
+    what: "<b>Client</b> sends filename, size, collection, tags, custom fields, and ‘there is a sidecar’. <b>Server</b> validates collection (required). <b>Storage</b> idle. <b>Processing</b> idle.",
+    why: "Metadata is cheap and it is what makes a file findable. A 12-hour transfer that dies at 90% still has a name. Collection is required because that is how browse stays logical.",
+    concern: "‘Upload first, form later’ never happens. S3 object tags are ~10 keys / 2&nbsp;KB. Unusable as a catalog. User metadata and technical metadata are different documents on purpose."
+  },
+  {
+    on: ["b-api", "b-pg", "b-s3"],
+    lane: '<span class="pkt meta">INSERT asset draft</span> → Postgres · <span class="pkt meta">CreateMultipartUpload</span> → S3 · signed URLs back',
+    kicker: "Step 2 · Open the session",
+    title: "A catalog row is born. A staging area is born. There is still no file.",
+    what: "<b>Server</b> writes <code>asset=draft</code> and an <code>upload_session</code> in Postgres, then asks S3 to start a multipart upload. S3 returns an <code>uploadId</code>. The API signs a batch of part URLs (32, not 6,144) and returns <code>ast_8K1</code>, <code>upl_44c</code>, part size. <b>Storage</b> now has an open MPU. Nothing is downloadable.",
+    why: "The API is allowed to talk to S3 for control (create / sign / complete). It is not allowed to carry the body. Presigned URLs mean the browser never holds AWS keys.",
+    concern: "S3 is not running a SQL transaction. If we never Complete, parts sit and cost money. Lifecycle abort at 14 days is mandatory. I issue URLs in batches so a 6,000-URL response is not a payload."
+  },
+  {
+    on: ["b-client", "b-s3"],
+    lane: '<span class="pkt file">PUT parts 1–8 in parallel · 256 MB each</span> browser → S3. API is not on this path.',
+    kicker: "Step 3 · Transfer",
+    title: "Bytes take the green road.",
+    what: "<b>Client</b> PUTs 4–8 parts at a time straight to S3. A failed part retries alone. <b>Server</b> is not in the byte path. <b>Storage</b> holds numbered parts under the upload id. There is still no assembled object. <b>Processing</b> idle.",
+    why: "This is the load-bearing decision. If parts go through Spring, every terabyte costs CPU, RAM, and a second copy. Signing a URL scales with metadata QPS. Uploading 256&nbsp;MB scales with NICs. Split them.",
+    concern: "tus through our servers is the same hop with a nicer protocol. Single PUT maxes at 5&nbsp;GB. 8&nbsp;MB parts on 4&nbsp;TB overflow the 10,000-part cap — part size must be adaptive."
+  },
+  {
+    on: ["b-client", "b-api", "b-pg", "b-redis"],
+    lane: '<span class="pkt meta">part 3812 landed · etag + crc</span> → Postgres ledger · Redis shows 62%',
+    kicker: "Step 4 · The ledger",
+    title: "After every part, we write a row. We do not trust the tab.",
+    what: "<b>Client</b> reports part number, ETag, checksum to the API and to IndexedDB. <b>Server</b> upserts <code>upload_part</code> (idempotent) and flips state to <code>uploading</code>. Redis holds the live percentage only.",
+    why: "Resume has to survive refresh, sleep, and a Redis flush. Postgres is the journal. Redis is the whiteboard. Either the server copy or IndexedDB is enough to continue.",
+    concern: "If resume lives only in browser memory, a refresh restarts a night-long job. That is not ‘reliable’. It is a lucky network."
+  },
+  {
+    on: ["b-client", "b-api", "b-pg"],
+    lane: '<span class="pkt meta">GET /uploads/upl_44c</span> → missing parts → continue at 3,813',
+    kicker: "Step 5 · Resume",
+    title: "The laptop slept. Morning does not start at 0%.",
+    what: "<b>Client</b> reloads the session, merges with IndexedDB, asks for a fresh URL batch. S3 still holds the 3,812 finished parts. Those bytes are not sent again. A 403 after sleep means the signature expired, not that the part is gone.",
+    why: "Reliability is a protocol: session id, upload id, part size, completed parts. The UI Pause button is just a cooperative stop on new PUTs.",
+    concern: "Presigned URLs dying is normal, not an incident. Rotate the batch. Do not restart the MPU."
+  },
+  {
+    on: ["b-client", "b-api", "b-s3", "b-pg"],
+    lane: '<span class="pkt meta">POST complete + etag list</span> · API calls CompleteMultipart · S3 concatenates',
+    kicker: "Step 6 · Seal",
+    title: "Now — and only now — there is a file.",
+    what: "<b>Client</b> sends the part list. <b>Server</b> calls Complete. S3 concatenates parts in order and returns a checksum. Match → <code>uploaded</code>, download allowed, event published. Mismatch → Abort, <code>failed</code>, metadata copied to a new session. <b>Processing</b> has not started. The raw object is already a catalog citizen.",
+    why: "S3 manages assembly. We manage the decision to assemble. Enrichment is off the ingest critical path so a 2&nbsp;TB take is usable the moment it is sealed.",
+    concern: "A multipart ETag is not MD5 of the file. Complete fails closed on checksum. SHA-256 content id can wait; we do not block download on a slow full-object hash. This is not a DB transaction — skip Complete and you pay for orphan parts."
+  },
+  {
+    on: ["b-api", "b-sqs", "b-pg"],
+    lane: '<span class="pkt job">asset.uploaded ast_8K1</span> sits in SQS. No worker has to be up yet.',
+    kicker: "Step 7 · Queue",
+    title: "A note goes in the mailbox. The file is already yours.",
+    what: "<b>Server</b> publishes a few hundred bytes: asset id, keys, MIME hint. <b>Storage</b> already has the object. <b>Processing</b> may be idle. The user can download.",
+    why: "A queue decouples ‘the bytes are durable’ from ‘someone understood them’. ffprobe can take minutes. A SIGMF spectrogram can take hours. A worker crash must not lose the fact of the upload.",
+    concern: "At-least-once delivery means the same note can arrive twice — extractors must be idempotent. Direct HTTP to a worker would make ingest wait on a 2&nbsp;TB job."
+  },
+  {
+    on: ["b-sqs", "b-work", "b-s3"],
+    lane: '<span class="pkt job">worker takes the note</span> · <span class="pkt file">GET range · first 64 KB</span> from S3, not 1.5 TB',
+    kicker: "Step 8 · Detect",
+    title: "The worker asks: what is this, actually?",
+    what: "<b>Processing</b> range-reads the header and the sidecar. SIGMF magic + paired meta → family <code>radar.sigmf</code>. A nameless <code>payload.bin</code> becomes <code>unknown</code>. That is a successful detect. <b>Storage</b> is only read, and only a sliver.",
+    why: "Diversity is the requirement. Detection is conservative. I will not download 1.5&nbsp;TB to a worker disk to read twenty bytes of header. That is also why we refused zip-at-ingest.",
+    concern: "Unknown is a type, not an error. The file is already searchable by user metadata. No parser must never mean no file."
+  },
+  {
+    on: ["b-work", "b-s3", "b-pg"],
+    lane: '<span class="pkt meta">PATCH technical_metadata</span> · 200 MS/s · 9.6 GHz · 412 s → Postgres',
+    kicker: "Step 9 · Extract",
+    title: "Observation, not intent.",
+    what: "The SIGMF extractor writes numbers the machine saw. It does not overwrite ‘X-SAR, night’. User metadata stays the uploader’s document. Technical metadata is keyed by extractor and versioned.",
+    why: "People and parsers disagree. Keeping them apart is how you stay auditable. Each extractor is a process with a timeout and a memory cap. Video and radar do not share a queue.",
+    concern: "A crashed extractor writes <code>partial</code> + a reason. It never deletes the asset. A giant <code>if mime</code> in one service makes every new format a release of everything."
+  },
+  {
+    on: ["b-work", "b-s3"],
+    lane: '<span class="pkt file">PUT derived/ast_8K1/spectrogram.png</span> — megabytes, not terabytes',
+    kicker: "Step 10 · Derive",
+    title: "Make something a human can see on a card.",
+    what: "One spectrogram strip. Images get two thumbs, video a poster, PDF a first page. Written to <code>derived/</code>, disposable. Raw stays in <code>raw/</code>.",
+    why: "Browse needs a picture. Enrichment must not silently double the estate. Derivatives are regenerable; the take is not.",
+    concern: "Unbounded transcodes are how the bill explodes. Hard-delete of a 4&nbsp;TB object on a button press is too fast — catalog delete is a state change, storage expires later."
+  },
+  {
+    on: ["b-client", "b-api", "b-os", "b-pg", "b-s3"],
+    lane: '<span class="pkt meta">GET /search?q=x-band</span> → OpenSearch ids · Postgres ACL · <span class="pkt file">signed GET</span> for the preview',
+    kicker: "Step 11 · Index and browse",
+    title: "You search. You do not walk /mnt/storage3.",
+    what: "<b>Processing</b> upserts a flat OpenSearch document. <b>Client</b> searches facets. <b>Server</b> hydrates ACL from Postgres and signs a short GET for <code>derived/</code>. The inspector shows user metadata first, technical metadata second. An enriching file is visible.",
+    why: "Logical browse is collections + facets + saved views. Path, if we have it, is a chip. Postgres remains the truth so a stale index cannot hide an asset you open by id.",
+    concern: "A reconstructed POSIX tree is how this estate became unusable. Tags-only drifts. OpenSearch-only makes a reindex an outage. Restricted radar can live on MinIO with the same catalog in front."
+  }
+];
+
+const $ = (id) => document.getElementById(id);
+let i = 0;
+let timer = null;
+
+function render() {
+  const s = scenes[i];
+  const bytesSteps = s.kicker.includes("3") || s.kicker.includes("6") || s.kicker.includes("8") || s.kicker.includes("10") || s.kicker.includes("11");
+  ["b-client","b-api","b-pg","b-s3","b-redis","b-sqs","b-work","b-os"].forEach((id) => {
+    $(id).classList.toggle("on", s.on.includes(id));
+    $(id).classList.toggle("bytes", bytesSteps && (id === "b-s3" || id === "b-client" || id === "b-work"));
+  });
+  $("lane").innerHTML = s.lane;
+  $("narr").innerHTML = `
+    <div class="kicker">${s.kicker}</div>
+    <h2>${s.title}</h2>
+    <div class="cols">
+      <div class="panel"><h3>What happens</h3><p>${s.what}</p></div>
+      <div class="panel why"><h3>Why I chose this</h3><p>${s.why}</p></div>
+      <div class="panel concern"><h3>Concern I would raise</h3><p>${s.concern}</p></div>
+    </div>`;
+  $("count").textContent = (i + 1) + " / " + scenes.length;
+  $("bar").style.width = ((i + 1) / scenes.length * 100) + "%";
+  [...$("dots").children].forEach((d, n) => d.classList.toggle("on", n === i));
+}
+
+function play() {
+  if (timer) {
+    clearInterval(timer);
+    timer = null;
+    $("play").textContent = "Play";
+    return;
+  }
+  $("play").textContent = "Pause";
+  timer = setInterval(() => {
+    if (i >= scenes.length - 1) { play(); return; }
+    i += 1;
+    render();
+  }, 14000);
+}
+
+$("prev").onclick = () => { i = Math.max(0, i - 1); render(); };
+$("next").onclick = () => { i = Math.min(scenes.length - 1, i + 1); render(); };
+$("play").onclick = play;
+scenes.forEach((_, n) => {
+  const b = document.createElement("button");
+  b.title = "Step " + (n + 1);
+  b.onclick = () => { i = n; render(); };
+  $("dots").appendChild(b);
+});
+render();
+
+document.querySelectorAll(".tabs button").forEach((btn) => {
+  btn.onclick = () => {
+    document.querySelectorAll(".tabs button").forEach((x) => x.classList.remove("on"));
+    btn.classList.add("on");
+    ["walk", "why", "concerns"].forEach((name) => {
+      $("tab-" + name).classList.toggle("hidden", btn.dataset.tab !== name);
+    });
+  };
+});
+</script>
+</body>
+</html>

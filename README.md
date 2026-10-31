@@ -7,17 +7,18 @@ This repository is the system design: architecture, tool choices, technical deci
 Open the UI locally:
 
 ```bash
+open ui/flow.html
 open ui/upload.html
 open ui/browse.html
 ```
 
-Or serve the folder and click through both pages:
+Or serve the folder and click through the pages:
 
 ```bash
 python3 -m http.server 4173 --directory ui
 ```
 
-Then visit [http://localhost:4173/upload.html](http://localhost:4173/upload.html) and [http://localhost:4173/browse.html](http://localhost:4173/browse.html).
+Then visit [http://localhost:4173/flow.html](http://localhost:4173/flow.html) for the walkthrough, plus [upload](http://localhost:4173/upload.html) and [browse](http://localhost:4173/browse.html).
 
 ---
 
@@ -256,6 +257,7 @@ Two screens. They are designed as a real product, not a wireframe: dark, dense, 
 
 | Screen | File | Intent |
 |---|---|---|
+| **Flow** | [`ui/flow.html`](ui/flow.html) | Step-through of the pipeline: what moves, why I chose it, concerns I would raise |
 | **Upload** | [`ui/upload.html`](ui/upload.html) | Drop files, attach metadata first, watch a resumable multi-file queue with integrity state |
 | **Browse** | [`ui/browse.html`](ui/browse.html) | Collections, facets, grid/list, inspector with user + technical metadata |
 
@@ -273,7 +275,7 @@ docs/decisions.md         ADRs and rejected alternatives
 docs/data-model.md        schema and metadata model
 docs/ui.md                upload + browse design
 docs/images/              screenshots of the two screens
-ui/                       high-fidelity mockups
+ui/                       high-fidelity mockups + flow walkthrough
 ```
 
 I am Shaked Neeman. This is the design I would implement first, and the places I would refuse to compromise: bytes stay out of the API, metadata is a first-class record, and unknown file types remain first-class citizens.
