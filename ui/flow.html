@@ -141,7 +141,7 @@
           <div class="box" id="b-client"><b>Browser</b><small>UI + part planner</small></div>
           <div class="box" id="b-api"><b>Catalog API</b><small>Spring · control plane</small></div>
           <div class="box" id="b-pg"><b>Postgres</b><small>source of truth</small></div>
-          <div class="box" id="b-s3"><b>S3 / MinIO</b><small>bytes only</small></div>
+          <div class="box" id="b-s3"><b>Amazon S3</b><small>bytes only</small></div>
           <div class="box" id="b-redis"><b>Redis</b><small>live progress</small></div>
           <div class="box" id="b-sqs"><b>SQS</b><small>work mailbox</small></div>
           <div class="box" id="b-work"><b>Workers</b><small>Python · files</small></div>
@@ -166,7 +166,7 @@
         <h3>The stack, and the alternative I refused</h3>
         <table>
           <tr><th>Layer</th><th>Choice</th><th>Why</th><th>Concern if I picked the other thing</th></tr>
-          <tr><td>Bytes</td><td>S3, MinIO on-prem</td><td>Multipart, checksums, 50&nbsp;TB objects, IAM</td><td>A disk on the API host dies in week one of terabyte ingest</td></tr>
+          <tr><td>Bytes</td><td>Amazon S3</td><td>Multipart, checksums, 50&nbsp;TB objects, IAM</td><td>A disk on the API host dies in week one of terabyte ingest</td></tr>
           <tr><td>Upload</td><td>Presigned multipart from the browser</td><td>S3 already has the protocol. We must not proxy terabytes</td><td>tus through our servers still makes us the pipe</td></tr>
           <tr><td>Catalog</td><td>Java 21 / Spring Boot</td><td>Transactional metadata, auth, boring on purpose</td><td>A byte-oriented service is the wrong shape for a catalog</td></tr>
           <tr><td>Truth</td><td>PostgreSQL</td><td>Asset → collection → ACL is relational</td><td>Mongo or “search-only” loses constraints and rebuilds become outages</td></tr>
@@ -240,8 +240,8 @@
       </div>
       <div class="card">
         <h3>12. Cost, deletes, and restricted radar</h3>
-        <p><b>Concern.</b> Derivatives can silently double the estate. A hard-delete of a 4&nbsp;TB take is unrecoverable. Some files cannot leave the building.</p>
-        <p><b>Answer.</b> Derivatives are capped (one poster, one spectrogram, one PDF page, two image sizes). Catalog delete is a state change; storage expires later. The storage interface is the S3 API, so a restricted collection can sit on MinIO behind the same catalog.</p>
+        <p><b>Concern.</b> Derivatives can silently double the estate. A hard-delete of a 4&nbsp;TB take is unrecoverable.</p>
+        <p><b>Answer.</b> Derivatives are capped (one poster, one spectrogram, one PDF page, two image sizes). Catalog delete is a state change; storage expires later. Restricted collections can sit in a separate private bucket behind the same catalog.</p>
       </div>
     </section>
   </div>
@@ -354,7 +354,7 @@ const scenes = [
     title: "You search. You do not walk /mnt/storage3.",
     what: "<b>Processing</b> upserts a flat OpenSearch document. <b>Client</b> searches facets. <b>Server</b> hydrates ACL from Postgres and signs a short GET for <code>derived/</code>. The inspector shows user metadata first, technical metadata second. An enriching file is visible.",
     why: "Logical browse is collections + facets + saved views. Path, if we have it, is a chip. Postgres remains the truth so a stale index cannot hide an asset you open by id.",
-    concern: "A reconstructed POSIX tree is how this estate became unusable. Tags-only drifts. OpenSearch-only makes a reindex an outage. Restricted radar can live on MinIO with the same catalog in front."
+    concern: "A reconstructed POSIX tree is how this estate became unusable. Tags-only drifts. OpenSearch-only makes a reindex an outage. Restricted collections can live in a separate private bucket behind the same catalog."
   }
 ];
 

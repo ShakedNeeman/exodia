@@ -104,16 +104,16 @@ Each decision is the choice, the reason, and what I refused.
 - *Java for enrichment* — Tika is great. The rest of the scientific/sensor stack is not.
 - *Go API* — I would take it for a greenfield byte-oriented service. This API is a catalog. Spring is the better fit for the team that has to own it.
 
-## ADR 10 — S3 now, MinIO when the bytes cannot leave
+## ADR 10 — Amazon S3 is the data plane
 
-**Decision.** The storage interface is the S3 API. AWS S3 in the default deployment. MinIO (or an equivalent) when the collection is restricted.
+**Decision.** All raw objects and derivatives live in Amazon S3. The client uploads with presigned multipart URLs. The API only creates keys and signs.
 
-**Why.** Radar is in the brief. Some of those files will not go to a public cloud. Designing only for S3, or only for a NAS, paints us into a corner. The catalog does not care which implementation signed the URL.
+**Why.** S3 already has the contract this problem needs: multipart, checksums, lifecycle, IAM, and objects large enough for terabyte takes. A filesystem on the API hosts, or a NAS, does not.
 
 **Rejected.**
 
 - *NFS / SMB as the data plane* — no multipart, no signed URL, painful consistency.
-- *Two different client protocols* — the browser would have to know too much.
+- *Proxying bytes through the API* — turns the control plane into a bandwidth bottleneck.
 
 ## ADR 11 — Soft delete, versioned objects, bounded derivatives
 

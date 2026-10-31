@@ -48,7 +48,7 @@ flowchart LR
     UI[Upload + browse]
   end
   UI -->|sessions, metadata, search| API[Catalog API<br/>Spring Boot]
-  UI -->|presigned PUT / GET| S3[Object storage<br/>S3 or MinIO]
+  UI -->|presigned PUT / GET| S3[Object storage<br/>Amazon S3]
   API --> PG[(PostgreSQL)]
   API --> Redis[(Redis)]
   API --> SQS[SQS]
@@ -153,7 +153,7 @@ Every choice is there to solve one of the requirements, not to collect a stack.
 | **Upload engine** | Custom S3 multipart client in the browser | tus is excellent for proxying through an app server. We must not proxy terabytes. Presigned multipart is the native contract of the storage we already need. |
 | **Catalog API** | Java 21, Spring Boot 3 | Transactional catalog writes, well-understood auth, and a team that can operate it. The API is chatty and metadata-heavy, not byte-heavy. Spring is the right shape for that. |
 | **Workers** | Python 3.12 | The format ecosystem lives here: `exiftool`, `ffprobe`, Apache Tika, `tifffile`, SIGMF, GDAL. I will not reimplement that in the API language. |
-| **Object storage** | Amazon S3, MinIO for on-prem | S3 is the default data plane for this problem: multipart, checksums, lifecycle, IAM, 50 TB objects. MinIO keeps the same API if the deployment cannot leave the building — relevant for radar and other restricted sets. |
+| **Object storage** | Amazon S3 | The data plane for this problem: multipart, checksums, lifecycle, IAM, objects up to 50 TB. A disk on the API host does not survive the first terabyte week. |
 | **Source of truth** | PostgreSQL 16 | Assets, sessions, and metadata need transactions and constraints. JSONB holds technical metadata whose shape changes per family. Not MongoDB: we have real relations (asset → collection → ACL) and we need them enforced. |
 | **Search** | OpenSearch | Faceted browse over tens of millions of files (type, sensor, tags, time, size, mission). Postgres is the truth. OpenSearch is a projection and can be rebuilt. |
 | **Queue** | Amazon SQS | Upload completion must survive a worker crash. SQS gives at-least-once delivery, visibility timeouts that match long ffprobe jobs, and no extra cluster to run. On-prem equivalent: RabbitMQ. |
@@ -238,7 +238,7 @@ The full model is in [`docs/data-model.md`](docs/data-model.md). The protocol is
 
 **Failure.** A dropped part retries. A dropped tab resumes from Postgres + IndexedDB. A worker crash returns the SQS message after the visibility timeout. A poison extractor is quarantined after N failures; the asset stays `uploaded`. Incomplete multipart uploads are garbage-collected.
 
-**Security.** OIDC at the edge. Collection-scoped ACLs. Presigned URLs expire in minutes. Raw and derived buckets are private. Server-side encryption at rest. Audit log on download, ACL change, and delete. Radar and other restricted collections can live in a separate bucket and a separate MinIO, with the same catalog in front.
+**Security.** OIDC at the edge. Collection-scoped ACLs. Presigned URLs expire in minutes. Raw and derived buckets are private. Server-side encryption at rest. Audit log on download, ACL change, and delete. Restricted collections can live in a separate bucket, with the same catalog in front.
 
 **Cost.** The expensive line is storage and egress, not compute. Lifecycle moves cold collections to infrequent access. Derivatives are bounded (one poster, one spectrogram, one PDF page) so enrichment cannot silently double the estate.
 

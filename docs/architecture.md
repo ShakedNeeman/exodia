@@ -19,7 +19,7 @@ Nothing in the design assumes the files are small, uniform, or already labeled.
              ▼                                     ▼
 ┌────────────────────────────┐          ┌────────────────────────────┐
 │  Catalog API               │          │  Object storage            │
-│  Spring Boot 3 / Java 21   │   keys   │  S3  or  MinIO             │
+│  Spring Boot 3 / Java 21   │   keys   │  Amazon S3                 │
 │                            │ ───────► │                            │
 │  /uploads  /assets         │          │  raw/{yyyy}/{mm}/{id}      │
 │  /search   /collections    │          │  derived/{id}/...          │
@@ -90,8 +90,6 @@ One AWS region to start. Three logical services, independently scalable.
 | Catalog API | ECS / EKS, Spring Boot | Request rate, not bytes |
 | Enrichment workers | ECS, Python, per-family queues | Queue depth and family (video ≠ exif) |
 | Storage / search / queue | Managed | Capacity and retention |
-
-On-prem: MinIO + Postgres + RabbitMQ + OpenSearch, same APIs. The client does not change. This matters for radar and any collection that cannot leave a classified or air-gapped network.
 
 ## Networking
 

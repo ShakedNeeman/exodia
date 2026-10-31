@@ -5,7 +5,7 @@ Client, server, processing, and storage at every stage — and the contracts bet
 ## Sequence: one file, from drop to browse
 
 ```
-Client                 Catalog API              S3 / MinIO              SQS                 Worker
+Client                 Catalog API              Amazon S3               SQS                 Worker
   │                        │                        │                    │                    │
   │  POST /uploads         │                        │                    │                    │
   │  metadata + size       │  INSERT asset draft    │                    │                    │

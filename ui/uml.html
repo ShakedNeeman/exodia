@@ -188,7 +188,7 @@
         <div class="comp data">
           <span class="stereotype">«component»</span>
           <h3 data-i="compStore">Object storage</h3>
-          <p data-i="compStoreD">S3 or MinIO. Raw objects, multipart parts, derived previews.</p>
+          <p data-i="compStoreD">Amazon S3. Raw objects, multipart parts, derived previews.</p>
         </div>
         <div class="comp">
           <span class="stereotype">«component»</span>
@@ -218,7 +218,7 @@
         <div></div>
         <div class="life">Client<small data-i="lifeC">browser</small></div>
         <div class="life">Server<small data-i="lifeS">Catalog API</small></div>
-        <div class="life">Storage<small data-i="lifeSt">S3 / MinIO</small></div>
+        <div class="life">Storage<small data-i="lifeSt">Amazon S3</small></div>
         <div class="life">Processing<small data-i="lifeP">workers</small></div>
       </div>
 
@@ -377,7 +377,7 @@
       <tr><td data-i="t1a">Client</td><td>React + TypeScript</td><td data-i="t1c">Long-lived upload queue and inspector. Types around part indexes.</td></tr>
       <tr><td data-i="t2a">API</td><td>Java 21, Spring Boot 3</td><td data-i="t2c">Transactional catalog. Chatty metadata, not bytes.</td></tr>
       <tr><td data-i="t3a">Workers</td><td>Python 3.12</td><td data-i="t3c">Format ecosystem: exif, ffprobe, Tika, SIGMF, GDAL.</td></tr>
-      <tr><td data-i="t4a">Storage</td><td>S3 / MinIO</td><td data-i="t4c">Native multipart. Same API if radar cannot leave the building.</td></tr>
+      <tr><td data-i="t4a">Storage</td><td>Amazon S3</td><td data-i="t4c">Native multipart, checksums, lifecycle, and objects up to 50 TB.</td></tr>
       <tr><td data-i="t5a">Truth</td><td>PostgreSQL 16</td><td data-i="t5c">Relations and a real state machine. JSONB for extractor output.</td></tr>
       <tr><td data-i="t6a">Search</td><td>OpenSearch</td><td data-i="t6c">Facets. Rebuildable. Never the source of truth.</td></tr>
       <tr><td data-i="t7a">Queue</td><td>SQS</td><td data-i="t7c">Seal must survive a worker crash. On-prem: RabbitMQ.</td></tr>
@@ -406,7 +406,7 @@ const I18N = {
     c1n: "UML «component». Amber border = control plane. Green border = data plane. Data stores sit under the component that owns them.",
     compClient: "Client", compClientD: "React + TypeScript. Upload queue, resume journal, browse + inspector.",
     compApi: "Catalog API", compApiD: "Spring Boot 3. Sessions, ACL, search, signing URLs. No file bodies.",
-    compStore: "Object storage", compStoreD: "S3 or MinIO. Raw objects, multipart parts, derived previews.",
+    compStore: "Object storage", compStoreD: "Amazon S3. Raw objects, multipart parts, derived previews.",
     compWork: "Enrichment", compWorkD: "Python workers. detect → extract → derive → index.",
     a1: "JSON · sessions, metadata, search",
     a2: "create MPU · sign URLs · complete",
@@ -419,7 +419,7 @@ const I18N = {
     sIdb: "Browser copy of completed parts",
     c2: "2. Sequence diagram — client, server, processing, storage",
     c2n: "The assignment asked to address these four layers at every stage. Amber = metadata. Green = file bytes. Blue = reply.",
-    lifeC: "browser", lifeS: "Catalog API", lifeSt: "S3 / MinIO", lifeP: "workers",
+    lifeC: "browser", lifeS: "Catalog API", lifeSt: "Amazon S3", lifeP: "workers",
     stIntent: "1 Intent", stTransfer: "2 Transfer", stSeal: "3 Seal", stEnrich: "4 Enrich", stBrowse: "Browse",
     m1: "POST /uploads + user metadata",
     m2: "CreateMultipartUpload",
@@ -447,7 +447,7 @@ const I18N = {
     t1a: "Client", t1c: "Long-lived upload queue and inspector. Types around part indexes.",
     t2a: "API", t2c: "Transactional catalog. Chatty metadata, not bytes.",
     t3a: "Workers", t3c: "Format ecosystem: exif, ffprobe, Tika, SIGMF, GDAL.",
-    t4a: "Storage", t4c: "Native multipart. Same API if radar cannot leave the building.",
+    t4a: "Storage", t4c: "Native multipart, checksums, lifecycle, and objects up to 50 TB.",
     t5a: "Truth", t5c: "Relations and a real state machine. JSONB for extractor output.",
     t6a: "Search", t6c: "Facets. Rebuildable. Never the source of truth.",
     t7a: "Queue", t7c: "Seal must survive a worker crash. On-prem: RabbitMQ.",
@@ -473,7 +473,7 @@ const I18N = {
     c1n: "UML «component». מסגרת כתומה = מישור בקרה. מסגרת ירוקה = מישור בייטים. מתחת לכל רכיב — איפה הדאטה שלו חי.",
     compClient: "לקוח", compClientD: "React + TypeScript. תור העלאה, יומן resume, גלישה ו-inspector.",
     compApi: "Catalog API", compApiD: "Spring Boot 3. סשנים, ACL, חיפוש, חתימת URLs. בלי גוף קובץ.",
-    compStore: "אחסון אובייקטים", compStoreD: "S3 או MinIO. קבצים גולמיים, חלקי multipart, תצוגות נגזרות.",
+    compStore: "אחסון אובייקטים", compStoreD: "Amazon S3. קבצים גולמיים, חלקי multipart, תצוגות נגזרות.",
     compWork: "העשרה", compWorkD: "עובדי Python. detect → extract → derive → index.",
     a1: "JSON · סשנים, מטא-דאטה, חיפוש",
     a2: "פתיחת MPU · חתימת URLs · complete",
@@ -486,7 +486,7 @@ const I18N = {
     sIdb: "עותק בדפדפן של חלקים שהסתיימו",
     c2: "2. דיאגרמת רצף — לקוח, שרת, עיבוד, אחסון",
     c2n: "המטלה ביקשה להתייחס לארבע השכבות האלה בכל שלב. כתום = מטא-דאטה. ירוק = בייטים. כחול = תשובה.",
-    lifeC: "דפדפן", lifeS: "Catalog API", lifeSt: "S3 / MinIO", lifeP: "עובדים",
+    lifeC: "דפדפן", lifeS: "Catalog API", lifeSt: "Amazon S3", lifeP: "עובדים",
     stIntent: "1 כוונה", stTransfer: "2 העברה", stSeal: "3 חותמת", stEnrich: "4 העשרה", stBrowse: "גלישה",
     m1: "POST /uploads + מטא-דאטה של המשתמש",
     m2: "CreateMultipartUpload",
@@ -514,7 +514,7 @@ const I18N = {
     t1a: "לקוח", t1c: "תור העלאה ארוך ו-inspector. טיפוסים סביב מספרי חלקים.",
     t2a: "API", t2c: "קטלוג טרנזקציוני. מטא-דאטה, לא בייטים.",
     t3a: "עובדים", t3c: "אקוסיסטם של פורמטים: exif, ffprobe, Tika, SIGMF, GDAL.",
-    t4a: "אחסון", t4c: "multipart מובנה. אותו API אם הרדאר לא יוצא מהבניין.",
+    t4a: "אחסון", t4c: "multipart מובנה, checksums, lifecycle, ואובייקטים עד 50 TB.",
     t5a: "אמת", t5c: "יחסים ומכונת מצבים אמיתית. JSONB לפלט של extractors.",
     t6a: "חיפוש", t6c: "פילטרים. אפשר לבנות מחדש. אף פעם לא מקור האמת.",
     t7a: "תור", t7c: "החותמת חייבת לשרוד קריסת worker. on-prem: RabbitMQ.",
