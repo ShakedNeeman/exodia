@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aperture — High-level UML</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Hebrew:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Syne:wght@700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0c0e12;
+      --elev: #13171d;
+      --soft: #1a2028;
+      --line: #2a3340;
+      --text: #eef2f6;
+      --muted: #8d98a6;
+      --faint: #6b7582;
+      --accent: #f0a14a;
+      --accent-dim: #3d2a14;
+      --signal: #3ddc97;
+      --signal-dim: #123528;
+      --blue: #7eb6ff;
+      --blue-dim: #173047;
+      --sans: "IBM Plex Sans", "IBM Plex Sans Hebrew", sans-serif;
+      --display: "Syne", "IBM Plex Sans Hebrew", sans-serif;
+      --mono: "IBM Plex Mono", ui-monospace, monospace;
+    }
+    html[lang="he"] { direction: rtl; }
+    html[lang="he"] body { font-family: "IBM Plex Sans Hebrew", "IBM Plex Sans", sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15px; line-height: 1.5; }
+    a { color: inherit; text-decoration: none; }
+    .top {
+      display: flex; align-items: center; gap: 16px;
+      padding: 12px 20px; border-bottom: 1px solid var(--line);
+      position: sticky; top: 0; background: rgba(12,14,18,.94); z-index: 5;
+    }
+    .brand { display: flex; align-items: center; gap: 8px; font-family: var(--display); font-weight: 700; }
+    .brand em { color: var(--accent); font-style: normal; }
+    .mark { width: 16px; height: 16px; border: 1.5px solid var(--accent); border-radius: 99px; position: relative; }
+    .mark::after { content: ""; position: absolute; inset: 3px; border: 1.5px solid var(--accent); border-radius: 99px; }
+    .nav a { color: var(--muted); margin-inline-end: 12px; }
+    .nav a.on { color: var(--text); }
+    .lang {
+      margin-inline-start: auto; display: flex; background: var(--elev);
+      border: 1px solid var(--line); border-radius: 999px; padding: 3px;
+    }
+    .lang button {
+      border: 0; background: none; color: var(--muted); font: inherit;
+      padding: 5px 12px; border-radius: 999px; cursor: pointer;
+    }
+    .lang button.on { background: var(--accent-dim); color: var(--accent); }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 20px 80px; }
+    h1 { font-family: var(--display); font-size: 34px; letter-spacing: -0.04em; margin: 0 0 8px; }
+    h2 { font-size: 20px; margin: 36px 0 10px; letter-spacing: -0.02em; }
+    .lead { color: var(--muted); max-width: 54em; margin: 0 0 22px; }
+    .points { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 18px 0 8px; }
+    @media (max-width: 900px) { .points { grid-template-columns: 1fr 1fr; } }
+    .point {
+      background: var(--elev); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px;
+    }
+    .point b { display: block; margin-bottom: 4px; }
+    .point span { color: var(--muted); font-size: 13px; }
+    .uml {
+      background: #10141a; border: 1px solid var(--line); border-radius: 16px;
+      padding: 18px 16px 20px; overflow-x: auto;
+    }
+    .stereotype { color: var(--faint); font-family: var(--mono); font-size: 11px; display: block; }
+    .comp-grid {
+      display: grid; grid-template-columns: 1.1fr 1fr 1fr 1fr; gap: 12px; min-width: 860px;
+    }
+    .comp {
+      border: 1px solid var(--line-strong, #3a4656); background: var(--elev);
+      border-radius: 4px; padding: 10px 12px; min-height: 92px;
+    }
+    .comp.plane { border-color: #6a4a20; }
+    .comp.data { border-color: #1f5a40; }
+    .comp h3 { margin: 2px 0 6px; font-size: 14px; }
+    .comp p { margin: 0; color: var(--muted); font-size: 12px; }
+    .arrow-row { display: grid; grid-template-columns: 1.1fr 1fr 1fr 1fr; gap: 12px; min-width: 860px; margin: 6px 0; }
+    .arr { color: var(--accent); font-family: var(--mono); font-size: 11px; text-align: center; }
+    .arr.green { color: var(--signal); }
+    .stores { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; min-width: 860px; margin-top: 14px; }
+    .store {
+      border: 1px dashed #3a4656; border-radius: 4px; padding: 8px 10px; background: #0c1016;
+    }
+    .store b { display: block; font-size: 13px; }
+    .store span { color: var(--faint); font-size: 11px; }
+
+    .seq { min-width: 920px; direction: ltr; text-align: left; }
+    html[lang="he"] .seq .lbl { text-align: right; font-family: "IBM Plex Sans Hebrew", sans-serif; }
+    .seq-head, .seq-row { display: grid; grid-template-columns: 140px repeat(4, 1fr); gap: 0; }
+    .life { text-align: center; padding: 8px 4px; border-bottom: 1px solid var(--line); font-weight: 600; font-size: 13px; }
+    .life small { display: block; color: var(--faint); font-weight: 400; font-size: 11px; }
+    .seq-row { min-height: 44px; position: relative; }
+    .seq-row .lbl { font-size: 12px; color: var(--muted); padding: 10px 8px; border-inline-end: 1px solid var(--line); }
+    .lane { position: relative; border-inline-end: 1px dashed #2a3340; }
+    .msg {
+      position: absolute; top: 12px; height: 2px; background: var(--accent);
+    }
+    .msg::after {
+      content: ""; position: absolute; inset-inline-end: -1px; top: -4px;
+      border: 5px solid transparent;
+    }
+    .msg::after { border-left-color: var(--accent); }
+    .msg.back { background: var(--blue); }
+    .msg.back::after { border-left-color: var(--blue); }
+    .msg.bytes { background: var(--signal); }
+    .msg.bytes::after { border-left-color: var(--signal); }
+    .msg .t {
+      position: absolute; top: -16px; inset-inline-start: 6px; white-space: nowrap;
+      font-family: var(--mono); font-size: 10px; color: #d7dee6;
+    }
+
+    .classes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; min-width: 860px; }
+    .cls {
+      border: 1px solid #3a4656; background: var(--elev); border-radius: 2px; overflow: hidden;
+    }
+    .cls h3 {
+      margin: 0; padding: 8px 10px; text-align: center; border-bottom: 1px solid var(--line);
+      font-size: 13px; background: #181e26;
+    }
+    .cls ul { margin: 0; padding: 8px 12px 10px 22px; color: var(--muted); font-size: 12px; font-family: var(--mono); }
+    html[lang="he"] .cls ul { padding: 8px 22px 10px 12px; }
+    .rel { color: var(--faint); font-size: 12px; text-align: center; margin: 8px 0 0; font-family: var(--mono); }
+
+    .states { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .st {
+      border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px;
+      font-family: var(--mono); font-size: 12px; background: var(--elev);
+    }
+    .st.go { border-color: #6a4a20; color: var(--accent); }
+    .st.ok { border-color: #1f5a40; color: var(--signal); }
+    .st.bad { border-color: #6a3030; color: #f07167; }
+    .st.arrow { border: 0; background: none; color: var(--faint); padding: 0 2px; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th, td { text-align: start; border-bottom: 1px solid var(--line); padding: 8px 6px; vertical-align: top; }
+    th { color: var(--faint); font-weight: 500; }
+    .note { color: var(--muted); font-size: 13px; margin-top: 8px; }
+    code { font-family: var(--mono); color: #f0c14a; font-size: .92em; }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="brand"><div class="mark"></div>ape<em>rture</em></div>
+    <nav class="nav">
+      <a href="index.html" data-i="navHome">Home</a>
+      <a class="on" href="uml.html" data-i="navUml">UML</a>
+      <a href="flow.html" data-i="navFlow">Flow</a>
+      <a href="upload.html" data-i="navUpload">Ingest</a>
+      <a href="browse.html" data-i="navBrowse">Browse</a>
+    </nav>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" id="btn-en" class="on">EN</button>
+      <button type="button" id="btn-he">עב</button>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <h1 data-i="title">High-level design</h1>
+    <p class="lead" data-i="lead">
+      A catalog in front of an object store. The assignment asked for reliable terabyte ingest, user metadata at upload, automatic technical enrichment, and a logical way to browse. These diagrams are the architecture overview: components, how they talk, and where data lives at each stage.
+    </p>
+
+    <div class="points">
+      <div class="point"><b data-i="p1t">Reliable TB uploads</b><span data-i="p1d">Presigned multipart to S3. The API never carries file bytes.</span></div>
+      <div class="point"><b data-i="p2t">Metadata at upload</b><span data-i="p2d">User fields are committed in draft, before the first part lands.</span></div>
+      <div class="point"><b data-i="p3t">Enrich where possible</b><span data-i="p3d">Async plugin workers. Unknown types stay first-class.</span></div>
+      <div class="point"><b data-i="p4t">Logical browse</b><span data-i="p4d">Collections and facets — not a reconstructed filesystem.</span></div>
+    </div>
+
+    <h2 data-i="c1">1. Component diagram — who talks to whom</h2>
+    <p class="note" data-i="c1n">UML «component». Amber border = control plane. Green border = data plane. Data stores sit under the component that owns them.</p>
+    <div class="uml">
+      <div class="comp-grid">
+        <div class="comp plane">
+          <span class="stereotype">«component»</span>
+          <h3 data-i="compClient">Client</h3>
+          <p data-i="compClientD">React + TypeScript. Upload queue, resume journal, browse + inspector.</p>
+        </div>
+        <div class="comp plane">
+          <span class="stereotype">«component»</span>
+          <h3 data-i="compApi">Catalog API</h3>
+          <p data-i="compApiD">Spring Boot 3. Sessions, ACL, search, signing URLs. No file bodies.</p>
+        </div>
+        <div class="comp data">
+          <span class="stereotype">«component»</span>
+          <h3 data-i="compStore">Object storage</h3>
+          <p data-i="compStoreD">S3 or MinIO. Raw objects, multipart parts, derived previews.</p>
+        </div>
+        <div class="comp">
+          <span class="stereotype">«component»</span>
+          <h3 data-i="compWork">Enrichment</h3>
+          <p data-i="compWorkD">Python workers. detect → extract → derive → index.</p>
+        </div>
+      </div>
+      <div class="arrow-row">
+        <div class="arr" data-i="a1">JSON · sessions, metadata, search</div>
+        <div class="arr" data-i="a2">create MPU · sign URLs · complete</div>
+        <div class="arr green" data-i="a3">PUT / GET bytes (presigned)</div>
+        <div class="arr green" data-i="a4">range-read raw · write derived</div>
+      </div>
+      <div class="stores">
+        <div class="store"><b>PostgreSQL</b><span data-i="sPg">Truth: assets, sessions, ACL, both metadata docs</span></div>
+        <div class="store"><b>Redis</b><span data-i="sRedis">Live progress only. Not the resume ledger</span></div>
+        <div class="store"><b>SQS</b><span data-i="sSqs">asset.uploaded mailbox. Survives worker death</span></div>
+        <div class="store"><b>OpenSearch</b><span data-i="sOs">Rebuildable search projection. Not truth</span></div>
+        <div class="store"><b>IndexedDB</b><span data-i="sIdb">Browser copy of completed parts</span></div>
+      </div>
+    </div>
+
+    <h2 data-i="c2">2. Sequence diagram — client, server, processing, storage</h2>
+    <p class="note" data-i="c2n">The assignment asked to address these four layers at every stage. Amber = metadata. Green = file bytes. Blue = reply.</p>
+    <div class="uml seq">
+      <div class="seq-head">
+        <div></div>
+        <div class="life">Client<small data-i="lifeC">browser</small></div>
+        <div class="life">Server<small data-i="lifeS">Catalog API</small></div>
+        <div class="life">Storage<small data-i="lifeSt">S3 / MinIO</small></div>
+        <div class="life">Processing<small data-i="lifeP">workers</small></div>
+      </div>
+
+      <div class="seq-row">
+        <div class="lbl" data-i="stIntent">1 Intent</div>
+        <div class="lane"></div>
+        <div class="lane"><div class="msg" style="left:8%;width:84%"><span class="t" data-i="m1">POST /uploads + user metadata</span></div></div>
+        <div class="lane"></div>
+        <div class="lane"></div>
+      </div>
+      <div class="seq-row">
+        <div class="lbl"></div>
+        <div class="lane"></div>
+        <div class="lane"></div>
+        <div class="lane"><div class="msg" style="left:-92%;width:92%"><span class="t" data-i="m2">CreateMultipartUpload</span></div></div>
+        <div class="lane"></div>
+      </div>
+      <div class="seq-row">
+        <div class="lbl"></div>
+        <div class="lane"></div>
+        <div class="lane"><div class="msg back" style="left:8%;width:84%"><span class="t" data-i="m3">session + presigned part URLs</span></div></div>
+        <div class="lane"></div>
+        <div class="lane"></div>
+      </div>
+      <div class="seq-row">
+        <div class="lbl" data-i="stTransfer">2 Transfer</div>
+        <div class="lane"></div>
+        <div class="lane"></div>
+        <div class="lane"><div class="msg bytes" style="left:-192%;width:192%"><span class="t" data-i="m4">PUT parts in parallel — API not on this path</span></div></div>
+        <div class="lane"></div>
+      </div>
+      <div class="seq-row">
+        <div class="lbl" data-i="stSeal">3 Seal</div>
+        <div class="lane"></div>
+        <div class="lane"><div class="msg" style="left:8%;width:84%"><span class="t" data-i="m5">POST complete + checksums</span></div></div>
+        <div class="lane"></div>
+        <div class="lane"></div>
+      </div>
+      <div class="seq-row">
+        <div class="lbl"></div>
+        <div class="lane"></div>
+        <div class="lane"></div>
+        <div class="lane"><div class="msg" style="left:-92%;width:92%"><span class="t" data-i="m6">CompleteMultipart — S3 assembles</span></div></div>
+        <div class="lane"></div>
+      </div>
+      <div class="seq-row">
+        <div class="lbl" data-i="stEnrich">4 Enrich</div>
+        <div class="lane"></div>
+        <div class="lane"></div>
+        <div class="lane"></div>
+        <div class="lane"><div class="msg" style="left:-192%;width:92%"><span class="t" data-i="m7">asset.uploaded event</span></div></div>
+      </div>
+      <div class="seq-row">
+        <div class="lbl"></div>
+        <div class="lane"></div>
+        <div class="lane"></div>
+        <div class="lane"><div class="msg bytes" style="left:8%;width:184%"><span class="t" data-i="m8">range-read raw · write derived</span></div></div>
+        <div class="lane"></div>
+      </div>
+      <div class="seq-row">
+        <div class="lbl" data-i="stBrowse">Browse</div>
+        <div class="lane"></div>
+        <div class="lane"><div class="msg" style="left:8%;width:84%"><span class="t" data-i="m9">GET /search · GET asset · signed GET</span></div></div>
+        <div class="lane"></div>
+        <div class="lane"></div>
+      </div>
+    </div>
+
+    <h2 data-i="c3">3. Class diagram — where data lives</h2>
+    <p class="note" data-i="c3n">An asset is logical. An object is physical. User metadata is intent. Technical metadata is observation.</p>
+    <div class="uml">
+      <div class="classes">
+        <div class="cls">
+          <h3>Collection</h3>
+          <ul>
+            <li>id, name, acl</li>
+            <li data-i="clCol">logical browse root</li>
+          </ul>
+        </div>
+        <div class="cls">
+          <h3>Asset</h3>
+          <ul>
+            <li>id, title, state, family</li>
+            <li>size, created_by</li>
+            <li data-i="clAsset">what people browse</li>
+          </ul>
+        </div>
+        <div class="cls">
+          <h3>AssetObject</h3>
+          <ul>
+            <li>role: primary | sidecar</li>
+            <li>storage_key, checksum</li>
+            <li data-i="clObj">what S3 holds</li>
+          </ul>
+        </div>
+        <div class="cls">
+          <h3>UploadSession</h3>
+          <ul>
+            <li>multipart_upload_id</li>
+            <li>part_size, parts[]</li>
+            <li data-i="clSess">resume ledger</li>
+          </ul>
+        </div>
+        <div class="cls">
+          <h3>UserMetadata</h3>
+          <ul>
+            <li>tags, fields, path</li>
+            <li data-i="clUser">written at POST /uploads</li>
+          </ul>
+        </div>
+        <div class="cls">
+          <h3>TechnicalMetadata</h3>
+          <ul>
+            <li>extractor, schema_ver</li>
+            <li>data JSONB</li>
+            <li data-i="clTech">written after seal</li>
+          </ul>
+        </div>
+        <div class="cls">
+          <h3>DerivedArtifact</h3>
+          <ul>
+            <li>thumb | poster | spectrogram</li>
+            <li data-i="clDer">regenerable, bounded</li>
+          </ul>
+        </div>
+        <div class="cls">
+          <h3>EnrichmentJob</h3>
+          <ul>
+            <li>queued | ok | failed</li>
+            <li data-i="clJob">cannot fail the asset</li>
+          </ul>
+        </div>
+      </div>
+      <p class="rel">Collection 1—* Asset 1—* AssetObject &nbsp;·&nbsp; Asset 1—1 UserMetadata &nbsp;·&nbsp; Asset 1—* TechnicalMetadata</p>
+    </div>
+
+    <h2 data-i="c4">4. State machine — the asset</h2>
+    <div class="uml">
+      <div class="states">
+        <span class="st go">draft</span><span class="st arrow">→</span>
+        <span class="st go">uploading</span><span class="st arrow">→</span>
+        <span class="st ok">uploaded</span><span class="st arrow">→</span>
+        <span class="st go">enriching</span><span class="st arrow">→</span>
+        <span class="st ok">ready</span>
+        <span class="st arrow">/</span>
+        <span class="st">partial</span>
+        <span class="st arrow">·</span>
+        <span class="st bad">failed</span>
+      </div>
+      <p class="note" data-i="c4n">Download is allowed from uploaded onward. Enrichment never hides the file. partial means at least one extractor failed or the type is unknown. failed is integrity / session only.</p>
+    </div>
+
+    <h2 data-i="c5">5. Tools, and why</h2>
+    <table>
+      <tr><th data-i="thLayer">Layer</th><th data-i="thChoice">Choice</th><th data-i="thWhy">Why this</th></tr>
+      <tr><td data-i="t1a">Client</td><td>React + TypeScript</td><td data-i="t1c">Long-lived upload queue and inspector. Types around part indexes.</td></tr>
+      <tr><td data-i="t2a">API</td><td>Java 21, Spring Boot 3</td><td data-i="t2c">Transactional catalog. Chatty metadata, not bytes.</td></tr>
+      <tr><td data-i="t3a">Workers</td><td>Python 3.12</td><td data-i="t3c">Format ecosystem: exif, ffprobe, Tika, SIGMF, GDAL.</td></tr>
+      <tr><td data-i="t4a">Storage</td><td>S3 / MinIO</td><td data-i="t4c">Native multipart. Same API if radar cannot leave the building.</td></tr>
+      <tr><td data-i="t5a">Truth</td><td>PostgreSQL 16</td><td data-i="t5c">Relations and a real state machine. JSONB for extractor output.</td></tr>
+      <tr><td data-i="t6a">Search</td><td>OpenSearch</td><td data-i="t6c">Facets. Rebuildable. Never the source of truth.</td></tr>
+      <tr><td data-i="t7a">Queue</td><td>SQS</td><td data-i="t7c">Seal must survive a worker crash. On-prem: RabbitMQ.</td></tr>
+    </table>
+
+    <h2 data-i="c6">6. Decisions I would not reverse</h2>
+    <div class="points" style="grid-template-columns: 1fr 1fr;">
+      <div class="point"><b data-i="d1t">Control plane ≠ data plane</b><span data-i="d1d">Bytes never go through the API. S3 assembles parts; we decide when to Complete. S3 does not run SQL transactions and does not manage video.</span></div>
+      <div class="point"><b data-i="d2t">Asset ≠ object</b><span data-i="d2d">A SIGMF take is one catalog row and two blobs. Zip-at-ingest would break range reads.</span></div>
+      <div class="point"><b data-i="d3t">Enrichment is best-effort</b><span data-i="d3d">The brief says “where possible”. Unknown is a type. A failed parser does not hide the file.</span></div>
+      <div class="point"><b data-i="d4t">Browse is a catalog</b><span data-i="d4d">Collections + facets + saved views. The old path is a filter, not the product.</span></div>
+    </div>
+  </div>
+
+<script>
+const I18N = {
+  en: {
+    navHome: "Home", navUml: "UML", navFlow: "Flow", navUpload: "Ingest", navBrowse: "Browse",
+    title: "High-level design",
+    lead: "A catalog in front of an object store. The assignment asked for reliable terabyte ingest, user metadata at upload, automatic technical enrichment, and a logical way to browse. These diagrams are the architecture overview: components, how they talk, and where data lives at each stage.",
+    p1t: "Reliable TB uploads", p1d: "Presigned multipart to S3. The API never carries file bytes.",
+    p2t: "Metadata at upload", p2d: "User fields are committed in draft, before the first part lands.",
+    p3t: "Enrich where possible", p3d: "Async plugin workers. Unknown types stay first-class.",
+    p4t: "Logical browse", p4d: "Collections and facets — not a reconstructed filesystem.",
+    c1: "1. Component diagram — who talks to whom",
+    c1n: "UML «component». Amber border = control plane. Green border = data plane. Data stores sit under the component that owns them.",
+    compClient: "Client", compClientD: "React + TypeScript. Upload queue, resume journal, browse + inspector.",
+    compApi: "Catalog API", compApiD: "Spring Boot 3. Sessions, ACL, search, signing URLs. No file bodies.",
+    compStore: "Object storage", compStoreD: "S3 or MinIO. Raw objects, multipart parts, derived previews.",
+    compWork: "Enrichment", compWorkD: "Python workers. detect → extract → derive → index.",
+    a1: "JSON · sessions, metadata, search",
+    a2: "create MPU · sign URLs · complete",
+    a3: "PUT / GET bytes (presigned)",
+    a4: "range-read raw · write derived",
+    sPg: "Truth: assets, sessions, ACL, both metadata docs",
+    sRedis: "Live progress only. Not the resume ledger",
+    sSqs: "asset.uploaded mailbox. Survives worker death",
+    sOs: "Rebuildable search projection. Not truth",
+    sIdb: "Browser copy of completed parts",
+    c2: "2. Sequence diagram — client, server, processing, storage",
+    c2n: "The assignment asked to address these four layers at every stage. Amber = metadata. Green = file bytes. Blue = reply.",
+    lifeC: "browser", lifeS: "Catalog API", lifeSt: "S3 / MinIO", lifeP: "workers",
+    stIntent: "1 Intent", stTransfer: "2 Transfer", stSeal: "3 Seal", stEnrich: "4 Enrich", stBrowse: "Browse",
+    m1: "POST /uploads + user metadata",
+    m2: "CreateMultipartUpload",
+    m3: "session + presigned part URLs",
+    m4: "PUT parts in parallel — API not on this path",
+    m5: "POST complete + checksums",
+    m6: "CompleteMultipart — S3 assembles",
+    m7: "asset.uploaded event",
+    m8: "range-read raw · write derived",
+    m9: "GET /search · GET asset · signed GET",
+    c3: "3. Class diagram — where data lives",
+    c3n: "An asset is logical. An object is physical. User metadata is intent. Technical metadata is observation.",
+    clCol: "logical browse root",
+    clAsset: "what people browse",
+    clObj: "what S3 holds",
+    clSess: "resume ledger",
+    clUser: "written at POST /uploads",
+    clTech: "written after seal",
+    clDer: "regenerable, bounded",
+    clJob: "cannot fail the asset",
+    c4: "4. State machine — the asset",
+    c4n: "Download is allowed from uploaded onward. Enrichment never hides the file. partial means at least one extractor failed or the type is unknown. failed is integrity / session only.",
+    c5: "5. Tools, and why",
+    thLayer: "Layer", thChoice: "Choice", thWhy: "Why this",
+    t1a: "Client", t1c: "Long-lived upload queue and inspector. Types around part indexes.",
+    t2a: "API", t2c: "Transactional catalog. Chatty metadata, not bytes.",
+    t3a: "Workers", t3c: "Format ecosystem: exif, ffprobe, Tika, SIGMF, GDAL.",
+    t4a: "Storage", t4c: "Native multipart. Same API if radar cannot leave the building.",
+    t5a: "Truth", t5c: "Relations and a real state machine. JSONB for extractor output.",
+    t6a: "Search", t6c: "Facets. Rebuildable. Never the source of truth.",
+    t7a: "Queue", t7c: "Seal must survive a worker crash. On-prem: RabbitMQ.",
+    c6: "6. Decisions I would not reverse",
+    d1t: "Control plane ≠ data plane",
+    d1d: "Bytes never go through the API. S3 assembles parts; we decide when to Complete. S3 does not run SQL transactions and does not manage video.",
+    d2t: "Asset ≠ object",
+    d2d: "A SIGMF take is one catalog row and two blobs. Zip-at-ingest would break range reads.",
+    d3t: "Enrichment is best-effort",
+    d3d: "The brief says “where possible”. Unknown is a type. A failed parser does not hide the file.",
+    d4t: "Browse is a catalog",
+    d4d: "Collections + facets + saved views. The old path is a filter, not the product."
+  },
+  he: {
+    navHome: "בית", navUml: "UML", navFlow: "פלואו", navUpload: "העלאה", navBrowse: "גלישה",
+    title: "עיצוב ברמה גבוהה",
+    lead: "קטלוג מול מחסן אובייקטים. המטלה ביקשה העלאות אמינות בהיקף טרה, מטא-דאטה של המשתמש בזמן ההעלאה, העשרה טכנית אוטומטית, וגלישה לוגית. הדיאגרמות האלה הן סקירת הארכיטקטורה: רכיבים, איך הם מדברים, ואיפה הדאטה חי בכל שלב.",
+    p1t: "העלאות טרה אמינות", p1d: "multipart חתום ישר ל-S3. ה-API לא מעביר בייטים.",
+    p2t: "מטא-דאטה בהעלאה", p2d: "שדות המשתמש נשמרים ב-draft, לפני שהחלק הראשון נוחת.",
+    p3t: "העשרה איפה שאפשר", p3d: "עובדים אסינכרוניים כתוספים. סוג לא מוכר נשאר אזרח מלא.",
+    p4t: "גלישה לוגית", p4d: "אוספים ופילטרים — לא שחזור של מערכת קבצים.",
+    c1: "1. דיאגרמת רכיבים — מי מדבר עם מי",
+    c1n: "UML «component». מסגרת כתומה = מישור בקרה. מסגרת ירוקה = מישור בייטים. מתחת לכל רכיב — איפה הדאטה שלו חי.",
+    compClient: "לקוח", compClientD: "React + TypeScript. תור העלאה, יומן resume, גלישה ו-inspector.",
+    compApi: "Catalog API", compApiD: "Spring Boot 3. סשנים, ACL, חיפוש, חתימת URLs. בלי גוף קובץ.",
+    compStore: "אחסון אובייקטים", compStoreD: "S3 או MinIO. קבצים גולמיים, חלקי multipart, תצוגות נגזרות.",
+    compWork: "העשרה", compWorkD: "עובדי Python. detect → extract → derive → index.",
+    a1: "JSON · סשנים, מטא-דאטה, חיפוש",
+    a2: "פתיחת MPU · חתימת URLs · complete",
+    a3: "PUT / GET של בייטים (חתום)",
+    a4: "קריאת טווח · כתיבת נגזרות",
+    sPg: "האמת: assets, סשנים, ACL, שני מסמכי המטא-דאטה",
+    sRedis: "התקדמות חיה בלבד. לא יומן ה-resume",
+    sSqs: "תיבת asset.uploaded. שורדת קריסת worker",
+    sOs: "הטלת חיפוש שאפשר לבנות מחדש. לא האמת",
+    sIdb: "עותק בדפדפן של חלקים שהסתיימו",
+    c2: "2. דיאגרמת רצף — לקוח, שרת, עיבוד, אחסון",
+    c2n: "המטלה ביקשה להתייחס לארבע השכבות האלה בכל שלב. כתום = מטא-דאטה. ירוק = בייטים. כחול = תשובה.",
+    lifeC: "דפדפן", lifeS: "Catalog API", lifeSt: "S3 / MinIO", lifeP: "עובדים",
+    stIntent: "1 כוונה", stTransfer: "2 העברה", stSeal: "3 חותמת", stEnrich: "4 העשרה", stBrowse: "גלישה",
+    m1: "POST /uploads + מטא-דאטה של המשתמש",
+    m2: "CreateMultipartUpload",
+    m3: "סשן + URLs חתומים לחלקים",
+    m4: "PUT חלקים במקביל — ה-API לא בנתיב",
+    m5: "POST complete + checksums",
+    m6: "CompleteMultipart — S3 מרכיב",
+    m7: "אירוע asset.uploaded",
+    m8: "קריאת טווח · כתיבת נגזרת",
+    m9: "GET /search · GET asset · GET חתום",
+    c3: "3. דיאגרמת מחלקות — איפה הדאטה חי",
+    c3n: "Asset הוא לוגי. Object הוא פיזי. מטא-דאטה של משתמש הוא כוונה. מטא-דאטה טכני הוא תצפית.",
+    clCol: "שורש גלישה לוגי",
+    clAsset: "מה שאנשים רואים",
+    clObj: "מה ש-S3 מחזיק",
+    clSess: "יומן resume",
+    clUser: "נכתב ב-POST /uploads",
+    clTech: "נכתב אחרי החותמת",
+    clDer: "אפשר לבנות מחדש, חסום בכמות",
+    clJob: "לא יכול להפיל את ה-asset",
+    c4: "4. מכונת מצבים — ה-asset",
+    c4n: "הורדה מותרת מ-uploaded והלאה. העשרה לא מחביאה קובץ. partial = extractor נכשל או הסוג לא מוכר. failed = רק שלמות / סשן.",
+    c5: "5. כלים, ולמה",
+    thLayer: "שכבה", thChoice: "בחירה", thWhy: "למה דווקא זה",
+    t1a: "לקוח", t1c: "תור העלאה ארוך ו-inspector. טיפוסים סביב מספרי חלקים.",
+    t2a: "API", t2c: "קטלוג טרנזקציוני. מטא-דאטה, לא בייטים.",
+    t3a: "עובדים", t3c: "אקוסיסטם של פורמטים: exif, ffprobe, Tika, SIGMF, GDAL.",
+    t4a: "אחסון", t4c: "multipart מובנה. אותו API אם הרדאר לא יוצא מהבניין.",
+    t5a: "אמת", t5c: "יחסים ומכונת מצבים אמיתית. JSONB לפלט של extractors.",
+    t6a: "חיפוש", t6c: "פילטרים. אפשר לבנות מחדש. אף פעם לא מקור האמת.",
+    t7a: "תור", t7c: "החותמת חייבת לשרוד קריסת worker. on-prem: RabbitMQ.",
+    c6: "6. החלטות שלא אהפוך",
+    d1t: "מישור בקרה ≠ מישור בייטים",
+    d1d: "בייטים לא עוברים ב-API. S3 מרכיב חלקים; אנחנו מחליטים מתי Complete. S3 לא מריץ טרנזקציות SQL ולא מנהל וידאו.",
+    d2t: "Asset ≠ object",
+    d2d: "צילום SIGMF הוא שורת קטלוג אחת ושני blobs. zip בהעלאה שובר קריאות טווח.",
+    d3t: "העשרה היא best-effort",
+    d3d: "במטלה כתוב “where possible”. unknown הוא טיפוס. parser שנכשל לא מחביא את הקובץ.",
+    d4t: "גלישה היא קטלוג",
+    d4d: "אוספים + פילטרים + תצוגות שמורות. הנתיב הישן הוא פילטר, לא המוצר."
+  }
+};
+
+function apply(lang) {
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "he" ? "rtl" : "ltr";
+  document.querySelectorAll("[data-i]").forEach((el) => {
+    const key = el.getAttribute("data-i");
+    if (I18N[lang][key]) el.textContent = I18N[lang][key];
+  });
+  document.getElementById("btn-en").classList.toggle("on", lang === "en");
+  document.getElementById("btn-he").classList.toggle("on", lang === "he");
+  try { localStorage.setItem("aperture-lang", lang); } catch (e) {}
+}
+
+document.getElementById("btn-en").onclick = () => apply("en");
+document.getElementById("btn-he").onclick = () => apply("he");
+apply(localStorage.getItem("aperture-lang") || "en");
+</script>
+</body>
+</html>
