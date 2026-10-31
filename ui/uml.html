@@ -148,7 +148,6 @@
     <nav class="nav">
       <a href="index.html" data-i="navHome">Home</a>
       <a class="on" href="uml.html" data-i="navUml">UML</a>
-      <a href="flow.html" data-i="navFlow">Flow</a>
       <a href="upload.html" data-i="navUpload">Ingest</a>
       <a href="browse.html" data-i="navBrowse">Browse</a>
     </nav>
@@ -163,6 +162,7 @@
     <p class="lead" data-i="lead">
       A catalog in front of an object store. The assignment asked for reliable terabyte ingest, user metadata at upload, automatic technical enrichment, and a logical way to browse. These diagrams are the architecture overview: components, how they talk, and where data lives at each stage.
     </p>
+    <p class="note"><a href="../docs/uml.md">docs/uml.md</a> · <a href="../docs/uml.he.md">docs/uml.he.md</a></p>
 
     <div class="points">
       <div class="point"><b data-i="p1t">Reliable TB uploads</b><span data-i="p1d">Presigned multipart to S3. The API never carries file bytes.</span></div>
@@ -395,7 +395,7 @@
 <script>
 const I18N = {
   en: {
-    navHome: "Home", navUml: "UML", navFlow: "Flow", navUpload: "Ingest", navBrowse: "Browse",
+    navHome: "Home", navUml: "UML", navUpload: "Ingest", navBrowse: "Browse",
     title: "High-level design",
     lead: "A catalog in front of an object store. The assignment asked for reliable terabyte ingest, user metadata at upload, automatic technical enrichment, and a logical way to browse. These diagrams are the architecture overview: components, how they talk, and where data lives at each stage.",
     p1t: "Reliable TB uploads", p1d: "Presigned multipart to S3. The API never carries file bytes.",
@@ -462,7 +462,7 @@ const I18N = {
     d4d: "Collections + facets + saved views. The old path is a filter, not the product."
   },
   he: {
-    navHome: "בית", navUml: "UML", navFlow: "פלואו", navUpload: "העלאה", navBrowse: "גלישה",
+    navHome: "בית", navUml: "UML", navUpload: "העלאה", navBrowse: "גלישה",
     title: "עיצוב ברמה גבוהה",
     lead: "קטלוג מול מחסן אובייקטים. המטלה ביקשה העלאות אמינות בהיקף טרה, מטא-דאטה של המשתמש בזמן ההעלאה, העשרה טכנית אוטומטית, וגלישה לוגית. הדיאגרמות האלה הן סקירת הארכיטקטורה: רכיבים, איך הם מדברים, ואיפה הדאטה חי בכל שלב.",
     p1t: "העלאות טרה אמינות", p1d: "multipart חתום ישר ל-S3. ה-API לא מעביר בייטים.",

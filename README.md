@@ -6,20 +6,25 @@ This repository is the system design: architecture, tool choices, technical deci
 
 Open the UI locally:
 
+UML lives in the repo, not only in HTML:
+
+- English: [`docs/uml.md`](docs/uml.md)
+- Hebrew: [`docs/uml.he.md`](docs/uml.he.md)
+- Interactive EN / עב: [`ui/uml.html`](ui/uml.html)
+
 ```bash
 open ui/uml.html
-open ui/flow.html
 open ui/upload.html
 open ui/browse.html
 ```
 
-Or serve the folder and click through the pages:
+Or serve the folder:
 
 ```bash
 python3 -m http.server 4173 --directory ui
 ```
 
-Then visit [http://localhost:4173/uml.html](http://localhost:4173/uml.html) for the high-level UML (EN / עב), [flow](http://localhost:4173/flow.html) for the walkthrough, plus [upload](http://localhost:4173/upload.html) and [browse](http://localhost:4173/browse.html).
+Then visit [http://localhost:4173/uml.html](http://localhost:4173/uml.html), [upload](http://localhost:4173/upload.html), and [browse](http://localhost:4173/browse.html).
 
 ---
 
@@ -42,21 +47,84 @@ Bytes and meaning have to be separated. The object store holds bytes. The catalo
 
 The control plane never carries file bytes. The client talks to **Catalog API** for sessions, metadata, search, and permissions. The client talks to **object storage** for the actual upload and download. After an object is complete, a queue wakes **enrichment workers**. Workers read the object, write derived artifacts back to storage, and update the catalog.
 
+Full UML (component, sequence, class, state) is in [`docs/uml.md`](docs/uml.md) and [`docs/uml.he.md`](docs/uml.he.md).
+
 ```mermaid
 flowchart LR
-  subgraph Client
-    UI[Upload + browse]
+  subgraph Control["«component» Control plane"]
+    C["«component» Client<br/>React + TypeScript"]
+    API["«component» Catalog API<br/>Spring Boot 3"]
   end
-  UI -->|sessions, metadata, search| API[Catalog API<br/>Spring Boot]
-  UI -->|presigned PUT / GET| S3[Object storage<br/>Amazon S3]
-  API --> PG[(PostgreSQL)]
-  API --> Redis[(Redis)]
+
+  subgraph Data["«component» Data plane"]
+    S3["«component» Amazon S3<br/>raw / derived"]
+  end
+
+  subgraph Work["«component» Enrichment"]
+    W["«component» Workers<br/>Python"]
+  end
+
+  C -->|"JSON: sessions, metadata, search"| API
+  C -->|"presigned PUT / GET"| S3
+  API -->|"CreateMPU · sign · Complete"| S3
+  API --> PG[(PostgreSQL<br/>truth)]
+  API --> Redis[(Redis<br/>live progress)]
   API --> SQS[SQS]
-  API --> OS[OpenSearch]
-  SQS --> W[Enrichment workers<br/>Python]
-  W -->|read raw / write derived| S3
+  API --> OS[OpenSearch<br/>projection]
+  SQS --> W
+  W -->|"range-read raw · write derived"| S3
   W --> PG
   W --> OS
+```
+
+```mermaid
+sequenceDiagram
+  actor Client
+  participant Server as Server<br/>Catalog API
+  participant Storage as Storage<br/>Amazon S3
+  participant Processing as Processing<br/>Workers
+
+  Note over Client,Processing: 1. Intent — metadata first
+  Client->>Server: POST /uploads + user metadata
+  Server->>Storage: CreateMultipartUpload
+  Storage-->>Server: uploadId
+  Server-->>Client: session + presigned part URLs
+
+  Note over Client,Processing: 2. Transfer — bytes go to S3
+  Client->>Storage: PUT parts in parallel
+  Client->>Server: part N landed
+
+  Note over Client,Processing: 3. Seal — S3 assembles
+  Client->>Server: POST complete + checksums
+  Server->>Storage: CompleteMultipartUpload
+  Storage-->>Server: object assembled
+  Server-->>Client: uploaded
+
+  Note over Client,Processing: 4. Enrich — after the file exists
+  Server->>Processing: asset.uploaded
+  Processing->>Storage: range-read raw · write derived
+  Processing->>Server: technical metadata
+```
+
+```mermaid
+classDiagram
+  Collection "1" --> "*" Asset
+  Asset "1" --> "*" AssetObject
+  Asset "1" --> "1" UserMetadata
+  Asset "1" --> "*" TechnicalMetadata
+  Asset "1" --> "*" DerivedArtifact
+  Asset "1" --> "1" UploadSession
+```
+
+```mermaid
+stateDiagram-v2
+  [*] --> draft
+  draft --> uploading
+  uploading --> uploaded
+  uploading --> failed
+  uploaded --> enriching
+  enriching --> ready
+  enriching --> partial
 ```
 
 | Component | Role | What lives there |
@@ -258,8 +326,7 @@ Two screens. They are designed as a real product, not a wireframe: dark, dense, 
 
 | Screen | File | Intent |
 |---|---|---|
-| **UML** | [`ui/uml.html`](ui/uml.html) | High-level component, sequence, class, and state diagrams — English / Hebrew |
-| **Flow** | [`ui/flow.html`](ui/flow.html) | Step-through of the pipeline: what moves, why I chose it, concerns I would raise |
+| **UML** | [`docs/uml.md`](docs/uml.md) · [`docs/uml.he.md`](docs/uml.he.md) · [`ui/uml.html`](ui/uml.html) | Component, sequence, class, and state — in git and as an EN / עב page |
 | **Upload** | [`ui/upload.html`](ui/upload.html) | Drop files, attach metadata first, watch a resumable multi-file queue with integrity state |
 | **Browse** | [`ui/browse.html`](ui/browse.html) | Collections, facets, grid/list, inspector with user + technical metadata |
 
@@ -275,9 +342,11 @@ docs/architecture.md      components, data placement, deployment
 docs/end-to-end.md        the four stages, APIs, sequence
 docs/decisions.md         ADRs and rejected alternatives
 docs/data-model.md        schema and metadata model
+docs/uml.md               high-level UML — English
+docs/uml.he.md            high-level UML — Hebrew
 docs/ui.md                upload + browse design
 docs/images/              screenshots of the two screens
-ui/                       mockups, UML overview, flow walkthrough
+ui/                       mockups + bilingual UML page
 ```
 
 I am Shaked Neeman. This is the design I would implement first, and the places I would refuse to compromise: bytes stay out of the API, metadata is a first-class record, and unknown file types remain first-class citizens.
