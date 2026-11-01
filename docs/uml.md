@@ -124,6 +124,7 @@ S3 stores parts and concatenates them on Complete. The client and API drive the 
 
 ```mermaid
 classDiagram
+  direction LR
   class Collection {
     id
     name
@@ -137,14 +138,14 @@ classDiagram
     size_bytes
   }
   class AssetObject {
-    role primary|sidecar
+    role
     storage_key
     checksum
   }
   class UploadSession {
     multipart_upload_id
     part_size
-    parts[]
+    part_count
   }
   class UserMetadata {
     tags
@@ -154,23 +155,22 @@ classDiagram
   class TechnicalMetadata {
     extractor
     schema_ver
-    data JSONB
+    data
   }
   class DerivedArtifact {
-    kind thumb|poster|spectrogram
+    kind
     storage_key
   }
   class EnrichmentJob {
-    state queued|ok|failed
+    job_state
   }
-
-  Collection "1" --> "*" Asset
-  Asset "1" --> "*" AssetObject
-  Asset "1" --> "1" UserMetadata
-  Asset "1" --> "*" TechnicalMetadata
-  Asset "1" --> "*" DerivedArtifact
-  Asset "1" --> "*" EnrichmentJob
-  Asset "1" --> "1" UploadSession
+  Collection --> Asset : one-to-many
+  Asset --> AssetObject : one-to-many
+  Asset --> UserMetadata : one-to-one
+  Asset --> TechnicalMetadata : one-to-many
+  Asset --> DerivedArtifact : one-to-many
+  Asset --> EnrichmentJob : one-to-many
+  Asset --> UploadSession : one-to-one
 ```
 
 - **Asset** is logical — what people browse.
@@ -185,15 +185,15 @@ classDiagram
 ```mermaid
 stateDiagram-v2
   [*] --> draft
-  draft --> uploading: first part lands
-  uploading --> uploaded: Complete + checksums match
-  uploading --> failed: integrity / abort
-  draft --> failed: session abort
-  uploaded --> enriching: worker starts
-  enriching --> ready: extractors that apply finished
-  enriching --> partial: extractor failed or type unknown
-  partial --> ready: re-run extractor
-  failed --> draft: retry, metadata copied
+  draft --> uploading : first part lands
+  uploading --> uploaded : Complete
+  uploading --> failed : abort
+  draft --> failed : session abort
+  uploaded --> enriching : worker starts
+  enriching --> ready : extractors finished
+  enriching --> partial : type unknown
+  partial --> ready : re-run
+  failed --> draft : retry
 ```
 
 Download is allowed from `uploaded` onward. Enrichment never hides the file. `failed` is integrity / session only.

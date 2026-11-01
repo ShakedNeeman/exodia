@@ -108,12 +108,13 @@ sequenceDiagram
 
 ```mermaid
 classDiagram
-  Collection "1" --> "*" Asset
-  Asset "1" --> "*" AssetObject
-  Asset "1" --> "1" UserMetadata
-  Asset "1" --> "*" TechnicalMetadata
-  Asset "1" --> "*" DerivedArtifact
-  Asset "1" --> "1" UploadSession
+  direction LR
+  Collection --> Asset : one-to-many
+  Asset --> AssetObject : one-to-many
+  Asset --> UserMetadata : one-to-one
+  Asset --> TechnicalMetadata : one-to-many
+  Asset --> DerivedArtifact : one-to-many
+  Asset --> UploadSession : one-to-one
 ```
 
 ```mermaid

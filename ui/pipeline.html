@@ -171,32 +171,62 @@ sequenceDiagram
       <h1>Class</h1>
       <div class="uml"><pre class="mermaid">
 classDiagram
-  Collection "1" --> "*" Asset
-  Asset "1" --> "*" AssetObject
-  Asset "1" --> "1" UserMetadata
-  Asset "1" --> "*" TechnicalMetadata
-  Asset "1" --> "*" DerivedArtifact
-  Asset "1" --> "1" UploadSession
-  class UploadSession {
-    multipart_upload_id
-    part_size
+  direction LR
+  class Collection {
+    id
+    name
+    acl
+  }
+  class Asset {
+    id
+    title
+    state
+    family
+    size_bytes
   }
   class AssetObject {
+    role
     storage_key
     checksum
   }
+  class UploadSession {
+    multipart_upload_id
+    part_size
+    part_count
+  }
+  class UserMetadata {
+    tags
+    fields
+  }
+  class TechnicalMetadata {
+    extractor
+    schema_ver
+    data
+  }
+  class DerivedArtifact {
+    kind
+    storage_key
+  }
+  Collection --> Asset : one-to-many
+  Asset --> AssetObject : one-to-many
+  Asset --> UserMetadata : one-to-one
+  Asset --> TechnicalMetadata : one-to-many
+  Asset --> DerivedArtifact : one-to-many
+  Asset --> UploadSession : one-to-one
 </pre></div>
       <h1>State</h1>
       <div class="uml"><pre class="mermaid">
 stateDiagram-v2
   [*] --> draft
-  draft --> uploading: first part lands
-  uploading --> uploaded: Complete + checksums
-  uploading --> failed: abort
-  uploaded --> enriching: worker
-  enriching --> ready: extractors ok
-  enriching --> partial: unknown or extractor fail
-  failed --> draft: retry
+  draft --> uploading : first part lands
+  uploading --> uploaded : Complete
+  uploading --> failed : abort
+  draft --> failed : session abort
+  uploaded --> enriching : worker starts
+  enriching --> ready : extractors ok
+  enriching --> partial : type unknown
+  partial --> ready : re-run
+  failed --> draft : retry
 </pre></div>
     </section>
     <section id="tab-ui" class="hidden">
