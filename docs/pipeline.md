@@ -24,3 +24,15 @@ Counts to say out loud:
 - Postgres catalog is **4 rows** at Start, plus **one row per finished part**.
 - Enrichment does **not** download 2 GB. Headers and one frame only.
 - The file is downloadable from **step 6**, before enrichment.
+
+## Failures
+
+| Failure | Product | Technical |
+|---|---|---|
+| Part 4 drops | Bar pauses, then moves | Retry only that PUT. Other `upload_part` rows stay. |
+| Tab closed at 38% | Resume at 38% | IndexedDB + Postgres list missing parts. New URLs if expired. |
+| Complete checksum mismatch | "Corrupt, try again" | Abort MPU. `asset=failed`. Copy metadata to a new session. |
+| Redis flushed | Percent blinks | Recount Postgres parts, rewrite the one key. No re-upload. |
+| Worker dies | File already downloadable | SQS retry. After N: `partial`, not missing. |
+| Unknown type | `unknown` badge, tags remain | detect ends; extractors skipped. A type, not an error. |
+| Forgot Complete | Looks stuck | 14-day S3 abort of orphan parts so we do not pay forever. |

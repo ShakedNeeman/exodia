@@ -11,12 +11,10 @@ UML lives in the repo, not only in HTML:
 - English: [`docs/uml.md`](docs/uml.md)
 - Hebrew: [`docs/uml.he.md`](docs/uml.he.md)
 - Interactive EN / עב: [`ui/uml.html`](ui/uml.html)
-- Presentation slides: [`ui/present.html`](ui/present.html) · notes [`docs/present.md`](docs/present.md) / [`docs/present.he.md`](docs/present.he.md)
-- One-file pipeline (what each DB holds at each step): [`ui/pipeline.html`](ui/pipeline.html) · [`docs/pipeline.md`](docs/pipeline.md) / [`docs/pipeline.he.md`](docs/pipeline.he.md)
+- Pipeline (records at each step, failures, UML + UI tabs): [`ui/pipeline.html`](ui/pipeline.html) · [`docs/pipeline.md`](docs/pipeline.md) / [`docs/pipeline.he.md`](docs/pipeline.he.md)
 
 ```bash
-open ui/present.html
-open ui/uml.html
+open ui/pipeline.html
 open ui/upload.html
 open ui/browse.html
 ```
@@ -27,7 +25,7 @@ Or serve the folder:
 python3 -m http.server 4173 --directory ui
 ```
 
-Then visit [http://localhost:4173/uml.html](http://localhost:4173/uml.html), [upload](http://localhost:4173/upload.html), and [browse](http://localhost:4173/browse.html).
+Then visit [http://localhost:4173/pipeline.html](http://localhost:4173/pipeline.html), [upload](http://localhost:4173/upload.html), and [browse](http://localhost:4173/browse.html).
 
 ---
 
@@ -345,8 +343,8 @@ docs/architecture.md      components, data placement, deployment
 docs/end-to-end.md        the four stages, APIs, sequence
 docs/decisions.md         ADRs and rejected alternatives
 docs/data-model.md        schema and metadata model
-docs/present.md           speaker notes — English
-docs/present.he.md        speaker notes — Hebrew
+docs/pipeline.md          per-step records + failures — English
+docs/pipeline.he.md       per-step records + failures — Hebrew
 docs/uml.md               high-level UML — English
 docs/uml.he.md            high-level UML — Hebrew
 docs/ui.md                upload + browse design
