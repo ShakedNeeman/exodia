@@ -8,10 +8,9 @@ Open the UI locally:
 
 UML lives in the repo, not only in HTML:
 
-- English: [`docs/uml.md`](docs/uml.md)
-- Hebrew: [`docs/uml.he.md`](docs/uml.he.md)
-- Interactive EN / עב: [`ui/uml.html`](ui/uml.html)
-- Pipeline (records at each step, failures, UML + UI tabs): [`ui/pipeline.html`](ui/pipeline.html) · [`docs/pipeline.md`](docs/pipeline.md) / [`docs/pipeline.he.md`](docs/pipeline.he.md)
+- [`docs/uml.md`](docs/uml.md) — component, sequence (client, API, Postgres, Redis, S3, SQS, workers, OpenSearch), class, state
+- Interactive: [`ui/uml.html`](ui/uml.html)
+- Pipeline (records at each step, failures, UML + UI tabs): [`ui/pipeline.html`](ui/pipeline.html) · [`docs/pipeline.md`](docs/pipeline.md)
 
 ```bash
 open ui/pipeline.html
@@ -48,7 +47,7 @@ Bytes and meaning have to be separated. The object store holds bytes. The catalo
 
 The control plane never carries file bytes. The client talks to **Catalog API** for sessions, metadata, search, and permissions. The client talks to **object storage** for the actual upload and download. After an object is complete, a queue wakes **enrichment workers**. Workers read the object, write derived artifacts back to storage, and update the catalog.
 
-Full UML (component, sequence, class, state) is in [`docs/uml.md`](docs/uml.md) and [`docs/uml.he.md`](docs/uml.he.md).
+Full UML (component, sequence, class, state) is in [`docs/uml.md`](docs/uml.md).
 
 ```mermaid
 flowchart LR
@@ -327,7 +326,7 @@ Two screens. They are designed as a real product, not a wireframe: dark, dense, 
 
 | Screen | File | Intent |
 |---|---|---|
-| **UML** | [`docs/uml.md`](docs/uml.md) · [`docs/uml.he.md`](docs/uml.he.md) · [`ui/uml.html`](ui/uml.html) | Component, sequence, class, and state — in git and as an EN / עב page |
+| **UML** | [`docs/uml.md`](docs/uml.md) · [`ui/uml.html`](ui/uml.html) | Component, sequence, class, and state |
 | **Upload** | [`ui/upload.html`](ui/upload.html) | Drop files, attach metadata first, watch a resumable multi-file queue with integrity state |
 | **Browse** | [`ui/browse.html`](ui/browse.html) | Collections, facets, grid/list, inspector with user + technical metadata |
 
@@ -343,13 +342,11 @@ docs/architecture.md      components, data placement, deployment
 docs/end-to-end.md        the four stages, APIs, sequence
 docs/decisions.md         ADRs and rejected alternatives
 docs/data-model.md        schema and metadata model
-docs/pipeline.md          per-step records + failures — English
-docs/pipeline.he.md       per-step records + failures — Hebrew
-docs/uml.md               high-level UML — English
-docs/uml.he.md            high-level UML — Hebrew
+docs/pipeline.md          per-step records + failures
+docs/uml.md               component, sequence, class, state
 docs/ui.md                upload + browse design
 docs/images/              screenshots of the two screens
-ui/                       mockups + bilingual UML page
+ui/                       mockups + UML + pipeline walkthrough
 ```
 
 I am Shaked Neeman. This is the design I would implement first, and the places I would refuse to compromise: bytes stay out of the API, metadata is a first-class record, and unknown file types remain first-class citizens.

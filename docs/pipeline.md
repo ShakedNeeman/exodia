@@ -1,6 +1,6 @@
 # One-file pipeline — what each store holds
 
-Interactive walkthrough: [`../ui/pipeline.html`](../ui/pipeline.html) (EN / עב).
+Interactive walkthrough: [`../ui/pipeline.html`](../ui/pipeline.html).
 
 Example: `hangar.mp4`, 2 GB, **8 parts** of 256 MB, **3 in flight**. Same design as 100 parts — only the `upload_part` row count changes.
 

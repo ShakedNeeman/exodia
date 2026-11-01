@@ -1,6 +1,6 @@
 # High-level UML
 
-English source for the architecture overview. Hebrew: [`uml.he.md`](uml.he.md). Interactive page: [`../ui/uml.html`](../ui/uml.html) (EN / עב).
+Architecture overview. Interactive page: [`../ui/uml.html`](../ui/uml.html).
 
 The assignment asked for an architecture overview — components, how they talk, where data lives at each stage — plus tools and key decisions. That is this file.
 
@@ -65,36 +65,54 @@ Four stages, as the brief asked. Amber path in the HTML is metadata. Green path 
 ```mermaid
 sequenceDiagram
   actor Client
-  participant Server as Server<br/>Catalog API
-  participant Storage as Storage<br/>Amazon S3
-  participant Processing as Processing<br/>Workers
+  participant API as Catalog API
+  participant PG as PostgreSQL
+  participant Redis as Redis
+  participant S3 as Amazon S3
+  participant SQS as SQS
+  participant W as Workers
+  participant OS as OpenSearch
 
-  Note over Client,Processing: 1. Intent — metadata first
-  Client->>Server: POST /uploads + user metadata
-  Server->>Storage: CreateMultipartUpload
-  Storage-->>Server: uploadId
-  Server-->>Client: session + presigned part URLs
+  Note over Client,OS: 1. Intent — metadata first
+  Client->>API: POST /uploads + user metadata
+  API->>PG: INSERT asset draft, object, user_metadata, session
+  API->>S3: CreateMultipartUpload
+  S3-->>API: uploadId
+  API->>Redis: SET progress:session pct=0
+  API-->>Client: session + presigned part URLs
 
-  Note over Client,Processing: 2. Transfer — bytes go to S3
-  Client->>Storage: PUT parts in parallel
-  Client->>Server: part N landed (etag, crc)
+  Note over Client,OS: 2. Transfer — bytes go to S3
+  loop 3 parts in flight
+    Client->>S3: PUT part N
+    S3-->>Client: ETag
+    Client->>API: part N landed (etag, crc)
+    API->>PG: INSERT upload_part
+    API->>Redis: SET progress:session (overwrite)
+  end
 
-  Note over Client,Processing: 3. Seal — S3 assembles
-  Client->>Server: POST complete + checksums
-  Server->>Storage: CompleteMultipartUpload
-  Storage-->>Server: object assembled
-  Server-->>Client: uploaded — download allowed
+  Note over Client,OS: 3. Seal — S3 assembles
+  Client->>API: POST complete + checksums
+  API->>S3: CompleteMultipartUpload
+  S3-->>API: object assembled
+  API->>PG: asset=uploaded, session=complete
+  API->>Redis: DEL progress:session
+  API->>SQS: asset.uploaded
+  API-->>Client: uploaded — download allowed
 
-  Note over Client,Processing: 4. Enrich — after the file exists
-  Server->>Processing: asset.uploaded
-  Processing->>Storage: range-read raw
-  Processing->>Storage: PUT derived/
-  Processing->>Server: technical metadata
+  Note over Client,OS: 4. Enrich — after the file exists
+  SQS->>W: asset.uploaded
+  W->>S3: range GET header
+  W->>PG: INSERT technical_metadata
+  W->>S3: PUT derived/poster
+  W->>PG: INSERT derived_artifact
+  W->>OS: PUT search document
+  W->>PG: asset=ready
 
-  Note over Client,Processing: Browse
-  Client->>Server: GET /search · GET /assets/{id}
-  Server-->>Client: signed GET for preview
-  Client->>Storage: GET derived artifact
+  Note over Client,OS: Browse
+  Client->>API: GET /search
+  API->>OS: query
+  API-->>Client: hits + signed GET
+  Client->>S3: GET derived artifact
 ```
 
 S3 stores parts and concatenates them on Complete. The client and API drive the session. S3 does not run SQL transactions and does not manage video.

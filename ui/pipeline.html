@@ -1,23 +1,41 @@
 <!doctype html>
-<html lang="he" dir="rtl">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Aperture — Pipeline</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Hebrew:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Syne:wght@700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Syne:wght@700&display=swap" rel="stylesheet" />
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+    window.__mermaid = mermaid;
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: "dark",
+      themeVariables: {
+        primaryColor: "#1a2028",
+        primaryTextColor: "#eef2f6",
+        primaryBorderColor: "#f0a14a",
+        lineColor: "#8d98a6",
+        secondaryColor: "#13171d",
+        tertiaryColor: "#0c0e12",
+        noteBkgColor: "#3d2a14",
+        noteTextColor: "#f3d2a8",
+        actorBkg: "#13171d",
+        actorBorder: "#f0a14a",
+        actorTextColor: "#eef2f6"
+      }
+    });
+  </script>
   <style>
     :root {
       --bg: #0c0e12; --elev: #13171d; --line: #2a3340; --text: #eef2f6;
       --muted: #8d98a6; --faint: #6b7582; --accent: #f0a14a; --accent-dim: #3d2a14;
-      --signal: #3ddc97; --blue: #7eb6ff; --blue-dim: #173047;
-      --sans: "IBM Plex Sans Hebrew", "IBM Plex Sans", sans-serif;
-      --display: "Syne", "IBM Plex Sans Hebrew", sans-serif;
+      --sans: "IBM Plex Sans", sans-serif;
+      --display: "Syne", sans-serif;
       --mono: "IBM Plex Mono", ui-monospace, monospace;
     }
-    html[lang="en"] { direction: ltr; }
-    html[lang="en"] body { font-family: "IBM Plex Sans", sans-serif; }
     * { box-sizing: border-box; }
     html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); }
     body { display: grid; grid-template-rows: 52px 44px 1fr 64px; }
@@ -25,14 +43,12 @@
     .foot { border-bottom: 0; border-top: 1px solid var(--line); }
     .brand { font-family: var(--display); font-weight: 700; }
     .brand em { color: var(--accent); font-style: normal; }
-    .lang { margin-inline-start: auto; display: flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; background: var(--elev); }
-    .lang button, .tabs button, .foot button {
-      border: 0; background: none; color: var(--muted); font: inherit; cursor: pointer;
-    }
-    .lang button { padding: 4px 10px; border-radius: 999px; }
-    .lang button.on, .tabs button.on { background: var(--accent-dim); color: var(--accent); }
     .tabs { gap: 6px; }
-    .tabs button { border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; background: var(--elev); }
+    .tabs button, .foot button {
+      border: 1px solid var(--line); background: var(--elev); color: var(--muted);
+      font: inherit; cursor: pointer; border-radius: 999px; padding: 6px 12px;
+    }
+    .tabs button.on { background: var(--accent-dim); color: var(--accent); }
     .stage { padding: 18px 22px 12px; overflow: auto; }
     .kicker { color: var(--accent); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
     h1 { font-family: var(--display); font-size: 24px; letter-spacing: -0.03em; margin: 4px 0 8px; }
@@ -44,393 +60,197 @@
     .db.hit { border-color: var(--accent); }
     .db.s3.hit { border-color: #1f5a40; }
     .db.os.hit { border-color: #2a4d6d; }
-    pre { font-family: var(--mono); font-size: 11px; direction: ltr; text-align: left; color: #d7dee6; margin: 0; white-space: pre-wrap; line-height: 1.4; }
+    pre { font-family: var(--mono); font-size: 11px; text-align: left; color: #d7dee6; margin: 0; white-space: pre-wrap; line-height: 1.4; }
     .hidden { display: none !important; }
-    .foot button { background: #1a2028; border: 1px solid var(--line); color: var(--text); border-radius: 10px; padding: 8px 12px; }
     .foot button.primary { background: var(--accent); color: #1a1208; border-color: #d48a30; font-weight: 600; }
     .bar { flex: 1; height: 5px; background: #2a313b; border-radius: 99px; overflow: hidden; }
     .bar i { display: block; height: 100%; background: var(--accent); width: 0; }
     .count { font-family: var(--mono); font-size: 12px; color: var(--faint); }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th, td { text-align: start; border-bottom: 1px solid var(--line); padding: 7px 6px; vertical-align: top; }
+    th, td { text-align: left; border-bottom: 1px solid var(--line); padding: 7px 6px; vertical-align: top; }
     th { color: var(--faint); font-weight: 500; }
-    .uml { background: #10141a; border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin-bottom: 16px; }
-    .comp-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-    .comp { border: 1px solid #3a4656; border-radius: 4px; padding: 10px; background: var(--elev); }
-    .comp.plane { border-color: #6a4a20; }
-    .comp.data { border-color: #1f5a40; }
-    .comp h3 { margin: 0 0 4px; font-size: 14px; }
-    .comp p { margin: 0; color: var(--muted); font-size: 12px; }
-    .stereo { color: var(--faint); font-family: var(--mono); font-size: 10px; }
+    .uml { background: #10141a; border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin-bottom: 16px; overflow-x: auto; }
     .ui-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .fake {
-      background: var(--elev); border: 1px solid var(--line); border-radius: 14px; padding: 14px; min-height: 220px;
-    }
+    .fake { background: var(--elev); border: 1px solid var(--line); border-radius: 14px; padding: 14px; min-height: 220px; }
     .fake h3 { margin: 0 0 8px; font-size: 14px; }
     .qrow { display: flex; justify-content: space-between; gap: 8px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 13px; }
     .pbar { height: 5px; background: #2a313b; border-radius: 99px; margin-top: 6px; overflow: hidden; }
     .pbar i { display: block; height: 100%; background: var(--accent); }
     .chip { display: inline-block; font-size: 11px; font-family: var(--mono); border: 1px solid var(--line); border-radius: 99px; padding: 2px 8px; }
-    .note { color: var(--muted); font-size: 14px; max-width: 54em; }
+    .note { color: var(--muted); font-size: 14px; max-width: 62em; }
   </style>
 </head>
 <body>
   <header class="top">
     <div class="brand">ape<em>rture</em></div>
-    <div class="lang">
-      <button type="button" id="btn-en">EN</button>
-      <button type="button" id="btn-he" class="on">עב</button>
-    </div>
   </header>
   <div class="tabs">
-    <button type="button" class="on" data-tab="flow" id="t-flow">Pipeline</button>
-    <button type="button" data-tab="uml" id="t-uml">UML</button>
-    <button type="button" data-tab="ui" id="t-ui">UI</button>
+    <button type="button" class="on" id="t-flow">Pipeline</button>
+    <button type="button" id="t-uml">UML</button>
+    <button type="button" id="t-ui">UI</button>
   </div>
   <main class="stage">
     <section id="tab-flow"></section>
-    <section id="tab-uml" class="hidden"></section>
-    <section id="tab-ui" class="hidden"></section>
+    <section id="tab-uml" class="hidden">
+      <p class="note">Same diagrams as <a href="uml.html" style="color:#f0a14a">uml.html</a> / docs/uml.md. Participants include Client, API, PostgreSQL, Redis, S3, SQS, workers, OpenSearch.</p>
+      <h1>Component</h1>
+      <div class="uml"><pre class="mermaid">
+flowchart LR
+  subgraph Control["Control plane"]
+    C["Client"]
+    API["Catalog API"]
+  end
+  subgraph Data["Data plane"]
+    S3["Amazon S3"]
+  end
+  subgraph Work["Enrichment"]
+    W["Workers"]
+  end
+  C -->|"JSON"| API
+  C -->|"presigned PUT/GET"| S3
+  API -->|"CreateMPU · Complete"| S3
+  API --> PG[(PostgreSQL)]
+  API --> Redis[(Redis)]
+  API --> SQS[SQS]
+  API --> OS[OpenSearch]
+  SQS --> W
+  W --> S3
+  W --> PG
+  W --> OS
+</pre></div>
+      <h1>Sequence — full flow</h1>
+      <div class="uml"><pre class="mermaid">
+sequenceDiagram
+  actor Client
+  participant API as Catalog API
+  participant PG as PostgreSQL
+  participant Redis as Redis
+  participant S3 as Amazon S3
+  participant SQS as SQS
+  participant W as Workers
+  participant OS as OpenSearch
+
+  Note over Client,OS: 1. Intent
+  Client->>API: POST /uploads + user metadata
+  API->>PG: INSERT draft rows
+  API->>S3: CreateMultipartUpload
+  S3-->>API: uploadId
+  API->>Redis: SET progress pct=0
+  API-->>Client: session + presigned URLs
+
+  Note over Client,OS: 2. Transfer
+  loop 3 parts in flight
+    Client->>S3: PUT part N
+    S3-->>Client: ETag
+    Client->>API: part N landed
+    API->>PG: INSERT upload_part
+    API->>Redis: SET progress overwrite
+  end
+
+  Note over Client,OS: 3. Seal
+  Client->>API: POST complete
+  API->>S3: CompleteMultipartUpload
+  S3-->>API: object assembled
+  API->>PG: asset=uploaded
+  API->>Redis: DEL progress
+  API->>SQS: asset.uploaded
+
+  Note over Client,OS: 4. Enrich
+  SQS->>W: asset.uploaded
+  W->>S3: range GET
+  W->>PG: technical_metadata
+  W->>S3: PUT derived
+  W->>OS: search document
+  W->>PG: asset=ready
+
+  Note over Client,OS: Browse
+  Client->>API: GET /search
+  API->>OS: query
+  Client->>S3: GET derived
+</pre></div>
+      <h1>Class</h1>
+      <div class="uml"><pre class="mermaid">
+classDiagram
+  Collection "1" --> "*" Asset
+  Asset "1" --> "*" AssetObject
+  Asset "1" --> "1" UserMetadata
+  Asset "1" --> "*" TechnicalMetadata
+  Asset "1" --> "*" DerivedArtifact
+  Asset "1" --> "1" UploadSession
+  class UploadSession {
+    multipart_upload_id
+    part_size
+  }
+  class AssetObject {
+    storage_key
+    checksum
+  }
+</pre></div>
+      <h1>State</h1>
+      <div class="uml"><pre class="mermaid">
+stateDiagram-v2
+  [*] --> draft
+  draft --> uploading: first part lands
+  uploading --> uploaded: Complete + checksums
+  uploading --> failed: abort
+  uploaded --> enriching: worker
+  enriching --> ready: extractors ok
+  enriching --> partial: unknown or extractor fail
+  failed --> draft: retry
+</pre></div>
+    </section>
+    <section id="tab-ui" class="hidden">
+      <p class="note">What a person sees at those steps. Never a spinner with no number.</p>
+      <div class="ui-grid">
+        <div class="fake">
+          <h3>Ingest · after Start (step 1)</h3>
+          <div>Hangar approach</div>
+          <div class="chip">draft</div>
+          <div class="pbar"><i style="width:0"></i></div>
+          <div class="qrow"><span>0 / 8 slices</span><span>waiting on the warehouse</span></div>
+          <p class="note">The form is already saved. You can close the tab.</p>
+        </div>
+        <div class="fake">
+          <h3>Ingest · step 4</h3>
+          <div>Hangar approach</div>
+          <div class="chip">uploading</div>
+          <div class="pbar"><i style="width:38%"></i></div>
+          <div class="qrow"><span>3 / 8 landed</span><span>4,5,6 in flight · Pause</span></div>
+          <p class="note">38% is from the notebook. Not a guess.</p>
+        </div>
+        <div class="fake">
+          <h3>Ingest · after Complete (step 6)</h3>
+          <div>Hangar approach</div>
+          <div class="chip">checksum ok · uploaded</div>
+          <div class="pbar"><i style="width:100%;background:#3ddc97"></i></div>
+          <div class="qrow"><span>download works</span><span>enriching…</span></div>
+          <p class="note">The movie is alive. The cover is still coming.</p>
+        </div>
+        <div class="fake">
+          <h3>Browse · step 10</h3>
+          <div style="height:72px;border-radius:8px;background:linear-gradient(#151920,#0d1016);display:grid;place-items:center">▶ poster</div>
+          <div>Hangar approach</div>
+          <div class="chip">video</div> <div class="chip">orbit-12</div>
+          <div class="qrow"><span>18:22 · 2GB</span><span>ready</span></div>
+          <p class="note">Your tags on top. ffprobe below.</p>
+        </div>
+      </div>
+    </section>
   </main>
   <footer class="foot" id="foot">
-    <button type="button" id="prev">הקודם</button>
-    <button type="button" class="primary" id="next">הבא</button>
+    <button type="button" id="prev">Previous</button>
+    <button type="button" class="primary" id="next">Next</button>
     <div class="bar"><i id="bar"></i></div>
     <span class="count" id="count"></span>
   </footer>
 <script>
-const I = {
-  he: {
-    prev: "הקודם", next: "הבא",
-    flow: "פלואו", uml: "UML", ui: "מסכים",
-    pg: "מחברת Postgres — שורות שנשארות",
-    rd: "פתק Redis — מוחקים וכותבים מחדש",
-    s3: "מחסן S3 — הארגזים",
-    os: "תוכן עניינים / תיבת דואר"
-  },
-  en: {
-    prev: "Previous", next: "Next",
-    flow: "Pipeline", uml: "UML", ui: "Screens",
-    pg: "Postgres notebook — rows that stay",
-    rd: "Redis sticky note — overwritten",
-    s3: "S3 warehouse — the boxes",
-    os: "Index / mailbox"
-  }
-};
-
-const STEPS = {
-  he: [
-    {
-      k: "שלב 0",
-      h: "יש סרטון במחשב. עוד לא לחצנו כלום.",
-      kid: "תחשוב על שלושה מקומות: מחברת (Postgres) — מה שכותבים בעיפרון ונשאר. פתק על המקרר (Redis) — מוחקים וכותבים מספר חדש. מחסן (S3) — שם שמים את הסרטון עצמו. עכשיו כולם ריקים מהסרטון הזה.",
-      hit: [],
-      pg: `asset            (ריק)
-asset_object     (ריק)
-user_metadata    (ריק)
-upload_session   (ריק)
-upload_part      0 שורות
-
-יש כבר אוסף:
-collection
- id=col_hangar  name="Hangar media"`,
-      rd: `(אין מפתחות)
-
-0 פתקים על המקרר.`,
-      s3: `bucket aperture-raw קיים
-אין קובץ hangar.mp4`,
-      os: `תור: ריק
-חיפוש: אין את הסרטון`
-    },
-    {
-      k: "שלב 1 · לחצנו Start",
-      h: "כותבים במחברת מי זה הסרטון. עדיין לא שולחים אותו.",
-      kid: "כמו לרשום במחברת: 'זה סרטון הנגאר, 2 ג׳יגה, תגיות orbit-12'. ורק אז לבקש מהמחסן מקום. הסרטון עצמו עוד בבית.",
-      hit: ["pg","rd","s3"],
-      pg: `asset
- id=ast_vid1
- title="Hangar approach"
- state=draft
- size_bytes=2147483648
- collection_id=col_hangar
- family=NULL
-
-asset_object
- id=obj_1  asset_id=ast_vid1
- role=primary
- filename="hangar.mp4"
- storage_key="raw/2026/11/ast_vid1/hangar.mp4"
- size_bytes=2147483648
-
-user_metadata
- asset_id=ast_vid1
- tags={orbit-12, hangar}
- fields={"camera":"A7S"}
-
-upload_session
- id=upl_99  asset_id=ast_vid1
- multipart_upload_id=mpu_X
- part_size=268435456
- part_count=8
- state=open
-
-upload_part  0 שורות`,
-      rd: `KEY   progress:upl_99
-VALUE {
-  "pct": 0,
-  "done": 0,
-  "of": 8,
-  "mbps": 0
-}
-
-1 פתק. לא 8.`,
-      s3: `CreateMultipartUpload
-uploadId = mpu_X
-key = raw/2026/11/ast_vid1/hangar.mp4
-
-חלקים שמורים: 0
-GET הקובץ: עדיין לא קיים`,
-      os: `אין הודעה
-אין מסמך חיפוש`
-    },
-    {
-      k: "שלב 2 · שלושה חלקים עפים",
-      h: "חותכים את הסרטון ל-8 פרוסות. שולחים 3 ביחד ישר למחסן.",
-      kid: "הסרטון זה עוגה. חותכים ל-8 משולשים. שולחים 3 משולשים בבת אחת למשאית (S3). המחברת והפתק עוד לא משתנים — המשאית עוד לא אמרה 'קיבלתי'.",
-      hit: ["s3"],
-      pg: `בלי שינוי.
-upload_part עדיין 0.
-S3 עוד לא אישר אף פרוסה.`,
-      rd: `אותו פתק
-pct: 0`,
-      s3: `PUT part 1  256MB  בדרך
-PUT part 2  256MB  בדרך
-PUT part 3  256MB  בדרך
-
-אף ארגז עוד לא על המדף.`,
-      os: `ריק`
-    },
-    {
-      k: "שלב 3 · פרוסה 2 הגיעה ראשונה",
-      h: "לא חייבים לפי הסדר. המחברת מוסיפה שורה. הפתק נמחק ונכתב מחדש.",
-      kid: "המשולש השני נחת לפני הראשון. זה בסדר. במחברת רושמים 'פרוסה 2 אצלנו'. על המקרר מוחקים 0% וכותבים 13%. לא מוסיפים פתק שני.",
-      hit: ["pg","rd","s3"],
-      pg: `upload_part עכשיו 1 שורה:
-
- session_id | part_number | etag | checksum     | size
- upl_99     | 2           | "e2" | crc64:aa11   | 268435456
-
-asset.state = uploading   (אותה שורה, רק העמודה השתנתה)
-
-שאר הטבלאות: אותו דבר כמו שלב 1.`,
-      rd: `אותו KEY progress:upl_99
-VALUE החדש (ישן נמחק):
-{
-  "pct": 13,
-  "done": 1,
-  "of": 8,
-  "last": 2
-}
-
-עדיין 1 פתק.`,
-      s3: `על המדף הזמני של mpu_X:
-  חלק 2 ✓
-
-בדרך: חלק 1, חלק 3
-אין hangar.mp4 שלם`,
-      os: `ריק`
-    },
-    {
-      k: "שלב 4 · גם 1 ו-3 נחתו. שולחים 4,5,6",
-      h: "תמיד לכל היותר 3 באוויר. המחברת גדלה. הפתק נשאר אחד.",
-      kid: "יש במחברת שלושה משולשים. שולחים עוד שלושה. אף פעם לא 8 מטוסים ביחד — כי אז הם מתנגשים.",
-      hit: ["pg","rd","s3"],
-      pg: `upload_part  3 שורות:
-
- part | etag
-    1 | "e1"
-    2 | "e2"
-    3 | "e3"
-
-סופרים שורות: 3 מתוך 8.
-asset / metadata / session — אותן 4 שורות קטלוג.`,
-      rd: `{
-  "pct": 38,
-  "done": 3,
-  "of": 8
-}
-
-1 פתק. נדרס מ-13 ל-38.`,
-      s3: `שמורים: 1, 2, 3
-באוויר: 4, 5, 6
-GET hangar.mp4 = אין`,
-      os: `ריק`
-    },
-    {
-      k: "שלב 5 · כל 8 הפרוסות במחסן",
-      h: "8 שורות במחברת. עדיין אי אפשר לראות את הסרטון.",
-      kid: "כל המשולשים במחסן, אבל אף אחד לא הדביק אותם לעוגה. בלי 'סיימתי' אין סרטון. הפתק אומר 100% נשלח — לא 100% מוכן.",
-      hit: ["pg","rd","s3"],
-      pg: `upload_part  8 שורות
- 1 "e1" … 8 "e8"
-
-upload_session.state = open
-asset.state = uploading
-
-קטלוג: 4 שורות
-חלקים: 8 שורות
-סה״כ על הקובץ: 12`,
-      rd: `{ "pct": 100, "done": 8, "of": 8 }
-
-1 פתק.`,
-      s3: `8 ארגזים זמניים תחת mpu_X
-Complete לא רץ
-GET hangar.mp4 → 404`,
-      os: `ריק`
-    },
-    {
-      k: "שלב 6 · סיימתי · מדביקים",
-      h: "המחסן מדביק לעוגה אחת. מוחקים את הפתק מהמקרר.",
-      kid: "אומרים למחסן: קח את 8 המשולשים לפי המספרים במחברת, הדבק. אם החתימה על כל משולש נכונה — יש סרטון. עכשיו מותר להוריד. עוד לא ציירנו תמונת שער.",
-      hit: ["pg","rd","s3","os"],
-      pg: `asset
- state=uploaded          ← השתנה
- uploaded_at=12:04
- family=NULL             ← העשרה עוד לא
-
-upload_session
- state=complete
-
-upload_part
- 8 השורות נשארות (כדי לזכור מה קרה)
-
-technical_metadata  0`,
-      rd: `DEL progress:upl_99
-
-0 פתקים.
-המד סיים. הסרטון לא גר ב-Redis.`,
-      s3: `אובייקט אחד:
- raw/2026/11/ast_vid1/hangar.mp4
- size=2GB
- GET עובד ✓
-
-הארגזים הזמניים הפכו לקובץ.`,
-      os: `תיבת דואר SQS:
- { "asset_id": "ast_vid1" }
- (מאות אותיות, לא 2GB)
-
-חיפוש: עדיין בלי דף בספר`
-    },
-    {
-      k: "שלב 7 · העשרה · מה זה?",
-      h: "לא מורידים 2 ג׳יגה. מבקשים רק את 64 האלפים הראשונים.",
-      kid: "כדי לדעת שזה סרטון, מספיק להציץ בכריכה. לא צריך לראות את כל הסרט. S3 יודע לתת 'רק מהבייט הזה עד הזה'.",
-      hit: ["pg","s3"],
-      pg: `technical_metadata  1 שורה חדשה
- asset_id=ast_vid1
- extractor=detect
- schema_ver=1
- data={
-   "family": "video",
-   "mime": "video/mp4"
- }
-
-asset.family = video
-asset.state  = enriching
-enrichment_job detect = ok`,
-      rd: `לא נוגעים.
-0 פתקים.`,
-      s3: `GET bytes=0-65535
-מתוך 2147483648
-
-זה כמו לפתוח 3 עמודים מתוך ספר של 100,000.`,
-      os: `ההודעה אצל ה-worker
-אין מסמך חיפוש`
-    },
-    {
-      k: "שלב 8 · העשרה · מספרים מהכותרת",
-      h: "ffprobe קורא כמה ארוך הסרט. התגיות שלך לא משתנות.",
-      kid: "אתה כתבת orbit-12. המכונה כותבת '18 דקות, h264'. שני דפים במחברת. לא דורסים אחד את השני.",
-      hit: ["pg","s3"],
-      pg: `technical_metadata  2 שורות
-
- detect  { "family": "video" }
- ffprobe {
-   "duration_s": 1102,
-   "codec": "h264",
-   "width": 1920,
-   "height": 1080
- }
-
-user_metadata (לא נגענו)
- tags={orbit-12, hangar}
- fields={"camera":"A7S"}`,
-      rd: `0`,
-      s3: `עוד GET קטן לכותרת (moov).
-2GB לא ירדו לדיסק של ה-worker.`,
-      os: `אין אינדקס עדיין`
-    },
-    {
-      k: "שלב 9 · תמונת שער",
-      h: "לוקחים פריים אחד. שומרים תמונה קטנה ליד, לא במקום הסרטון.",
-      kid: "כמו לצלם את העטיפה של הסרט. הסרט נשאר במחסן. התמונה הקטנה הולכת למדף 'תצוגות'.",
-      hit: ["pg","s3"],
-      pg: `derived_artifact  1 שורה
- id=der_1
- asset_id=ast_vid1
- kind=poster
- storage_key="derived/ast_vid1/poster.jpg"
- width=1920 height=1080`,
-      rd: `0`,
-      s3: `raw/…/hangar.mp4      2GB   (כמו שהיה)
-derived/…/poster.jpg  200KB (חדש)`,
-      os: `אין אינדקס`
-    },
-    {
-      k: "שלב 10 · תוכן העניינים",
-      h: "עכשיו אפשר לחפש 'hangar' בלי לדעת את המספר הסודי.",
-      kid: "תוכן העניינים (OpenSearch) זה דף בסוף הספר. אם קורעים אותו — הספר (Postgres) עדיין שם. אפשר לכתוב תוכן עניינים חדש.",
-      hit: ["pg","os","s3"],
-      pg: `asset.state = ready
-
-סיכום שורות לקובץ הזה:
- asset 1
- asset_object 1
- user_metadata 1
- upload_session 1
- upload_part 8
- technical_metadata 2
- derived_artifact 1
- enrichment_job 2
- ────────
- 17 שורות במחברת`,
-      rd: `0 פתקים`,
-      s3: `2GB raw + 200KB poster`,
-      os: `מסמך חיפוש 1:
-{
-  "asset_id": "ast_vid1",
-  "title": "Hangar approach",
-  "family": "video",
-  "tags": ["orbit-12","hangar"],
-  "duration_s": 1102
-}
-תיבת הדואר: ההודעה נמחקה`
-    },
-    {
-      k: "תקלות · מה נשבר ואיך קמים",
-      h: "כל תקלה: מה הילד רואה, ומה המכונה עושה.",
-      kid: "דברים נופלים. התכנון הוא שפרוסה שנפלה לא זורקת את כל העוגה, וטאב שנסגר לא מתחיל את הלילה מחדש.",
-      hit: [],
-      fail: true
-    }
-  ],
-  en: [
-    {
-      k: "Step 0",
-      h: "The video is on the laptop. We have not pressed anything.",
-      kid: "Three places: a notebook (Postgres) that keeps rows, a fridge note (Redis) we erase and rewrite, a warehouse (S3) for the actual movie. Right now none of them know this file.",
-      hit: [],
-      pg: `asset            (empty)
+const STEPS = [
+  {
+    k: "Step 0",
+    h: "The video is on the laptop. We have not pressed anything.",
+    kid: "Three places: a notebook (Postgres) that keeps rows, a fridge note (Redis) we erase and rewrite, a warehouse (S3) for the actual movie. Right now none of them know this file.",
+    hit: [],
+    pg: `asset            (empty)
 asset_object     (empty)
 user_metadata    (empty)
 upload_session   (empty)
@@ -438,18 +258,18 @@ upload_part      0 rows
 
 collection already exists:
  id=col_hangar  name="Hangar media"`,
-      rd: `(no keys)`,
-      s3: `bucket exists
+    rd: `(no keys)`,
+    s3: `bucket exists
 no hangar.mp4`,
-      os: `queue empty
+    os: `queue empty
 search empty`
-    },
-    {
-      k: "Step 1 · Start",
-      h: "We write in the notebook who this video is. We still do not send it.",
-      kid: "Like writing 'Hangar video, 2GB, tag orbit-12' before the truck leaves. The movie is still at home.",
-      hit: ["pg","rd","s3"],
-      pg: `asset
+  },
+  {
+    k: "Step 1 · Start",
+    h: "We write in the notebook who this video is. We still do not send it.",
+    kid: "Like writing 'Hangar video, 2GB, tag orbit-12' before the truck leaves. The movie is still at home.",
+    hit: ["pg","rd","s3"],
+    pg: `asset
  id=ast_vid1  title="Hangar approach"
  state=draft  size_bytes=2147483648
 
@@ -466,158 +286,145 @@ upload_session
  part_count=8  state=open
 
 upload_part  0 rows`,
-      rd: `KEY   progress:upl_99
+    rd: `KEY   progress:upl_99
 VALUE { "pct": 0, "done": 0, "of": 8 }
 
 1 note. Not 8.`,
-      s3: `CreateMultipartUpload
+    s3: `CreateMultipartUpload
 uploadId=mpu_X
 parts stored: 0
 GET file: missing`,
-      os: `no message
+    os: `no message
 no search doc`
-    },
-    {
-      k: "Step 2 · Three slices in the air",
-      h: "Cut the video into 8 slices. Send 3 at a time, straight to the warehouse.",
-      kid: "The movie is a cake. Eight slices. Three ride the truck together. Notebook and fridge note wait until the warehouse says 'got it'.",
-      hit: ["s3"],
-      pg: `Unchanged.
+  },
+  {
+    k: "Step 2 · Three slices in the air",
+    h: "Cut the video into 8 slices. Send 3 at a time, straight to the warehouse.",
+    kid: "The movie is a cake. Eight slices. Three ride the truck together. Notebook and fridge note wait until the warehouse says 'got it'.",
+    hit: ["s3"],
+    pg: `Unchanged.
 upload_part still 0.`,
-      rd: `same note  pct: 0`,
-      s3: `PUT part 1, 2, 3 in flight
+    rd: `same note  pct: 0`,
+    s3: `PUT part 1, 2, 3 in flight
 nothing on the shelf yet`,
-      os: `empty`
-    },
-    {
-      k: "Step 3 · Slice 2 arrives first",
-      h: "Order does not matter. Notebook adds a row. Fridge note is rewritten.",
-      kid: "Slice 2 landed before slice 1. Fine. Write 'slice 2 is here'. Erase 0% on the fridge, write 13%. Do not add a second note.",
-      hit: ["pg","rd","s3"],
-      pg: `upload_part  1 row
+    os: `empty`
+  },
+  {
+    k: "Step 3 · Slice 2 arrives first",
+    h: "Order does not matter. Notebook adds a row. Fridge note is rewritten.",
+    kid: "Slice 2 landed before slice 1. Fine. Write 'slice 2 is here'. Erase 0% on the fridge, write 13%. Do not add a second note.",
+    hit: ["pg","rd","s3"],
+    pg: `upload_part  1 row
  session_id | part | etag
  upl_99     | 2    | "e2"
 
 asset.state = uploading`,
-      rd: `same KEY, new VALUE
+    rd: `same KEY, new VALUE
 { "pct": 13, "done": 1, "last": 2 }
 still 1 note`,
-      s3: `stored: part 2
+    s3: `stored: part 2
 in flight: 1, 3`,
-      os: `empty`
-    },
-    {
-      k: "Step 4 · 1 and 3 land. Send 4,5,6",
-      h: "At most 3 in the air. Notebook grows. Redis stays one key.",
-      kid: "Three slices in the notebook. Send three more. Never eight planes at once — they bump into each other.",
-      hit: ["pg","rd","s3"],
-      pg: `upload_part  3 rows
+    os: `empty`
+  },
+  {
+    k: "Step 4 · 1 and 3 land. Send 4,5,6",
+    h: "At most 3 in the air. Notebook grows. Redis stays one key.",
+    kid: "Three slices in the notebook. Send three more. Never eight planes at once — they bump into each other.",
+    hit: ["pg","rd","s3"],
+    pg: `upload_part  3 rows
  1 "e1"  2 "e2"  3 "e3"`,
-      rd: `{ "pct": 38, "done": 3, "of": 8 }`,
-      s3: `stored 1–3 · in flight 4–6`,
-      os: `empty`
-    },
-    {
-      k: "Step 5 · All 8 slices stored",
-      h: "8 notebook rows. Still cannot play the movie.",
-      kid: "All slices are in the warehouse. Nobody glued the cake. 100% sent is not 100% ready.",
-      hit: ["pg","rd","s3"],
-      pg: `upload_part 8 rows
+    rd: `{ "pct": 38, "done": 3, "of": 8 }`,
+    s3: `stored 1–3 · in flight 4–6`,
+    os: `empty`
+  },
+  {
+    k: "Step 5 · All 8 slices stored",
+    h: "8 notebook rows. Still cannot play the movie.",
+    kid: "All slices are in the warehouse. Nobody glued the cake. 100% sent is not 100% ready.",
+    hit: ["pg","rd","s3"],
+    pg: `upload_part 8 rows
 session still open
 asset still uploading`,
-      rd: `{ "pct": 100, "done": 8 }`,
-      s3: `8 staging parts
+    rd: `{ "pct": 100, "done": 8 }`,
+    s3: `8 staging parts
 GET hangar.mp4 → 404`,
-      os: `empty`
-    },
-    {
-      k: "Step 6 · Done · glue",
-      h: "The warehouse glues one cake. We throw away the fridge note.",
-      kid: "Tell S3: glue slices 1–8 using the etags in the notebook. If checksums match, the movie exists. You may download it. We have not drawn a cover yet.",
-      hit: ["pg","rd","s3","os"],
-      pg: `asset.state=uploaded
+    os: `empty`
+  },
+  {
+    k: "Step 6 · Done · glue",
+    h: "The warehouse glues one cake. We throw away the fridge note.",
+    kid: "Tell S3: glue slices 1–8 using the etags in the notebook. If checksums match, the movie exists. You may download it. We have not drawn a cover yet.",
+    hit: ["pg","rd","s3","os"],
+    pg: `asset.state=uploaded
 session.state=complete
 8 part rows stay
 technical_metadata 0`,
-      rd: `DEL progress:upl_99
+    rd: `DEL progress:upl_99
 0 notes`,
-      s3: `one object 2GB
+    s3: `one object 2GB
 GET works`,
-      os: `SQS { "asset_id": "ast_vid1" }
+    os: `SQS { "asset_id": "ast_vid1" }
 tiny message, not 2GB`
-    },
-    {
-      k: "Step 7 · Enrich · what is it?",
-      h: "Do not download 2GB. Ask for the first 64KB.",
-      kid: "To know it is a movie, peek at the cover. S3 can give 'only these bytes'.",
-      hit: ["pg","s3"],
-      pg: `technical_metadata 1
+  },
+  {
+    k: "Step 7 · Enrich · what is it?",
+    h: "Do not download 2GB. Ask for the first 64KB.",
+    kid: "To know it is a movie, peek at the cover. S3 can give 'only these bytes'.",
+    hit: ["pg","s3"],
+    pg: `technical_metadata 1
  extractor=detect
  data={ "family": "video" }
 asset.state=enriching`,
-      rd: `0`,
-      s3: `GET bytes=0-65535 of 2GB`,
-      os: `worker has the mail`
-    },
-    {
-      k: "Step 8 · Enrich · numbers from the header",
-      h: "ffprobe reads how long it is. Your tags stay yours.",
-      kid: "You wrote orbit-12. The machine writes '18 minutes, h264'. Two pages. Neither overwrites the other.",
-      hit: ["pg","s3"],
-      pg: `technical_metadata 2
+    rd: `0`,
+    s3: `GET bytes=0-65535 of 2GB`,
+    os: `worker has the mail`
+  },
+  {
+    k: "Step 8 · Enrich · numbers from the header",
+    h: "ffprobe reads how long it is. Your tags stay yours.",
+    kid: "You wrote orbit-12. The machine writes '18 minutes, h264'. Two pages. Neither overwrites the other.",
+    hit: ["pg","s3"],
+    pg: `technical_metadata 2
  detect { family: video }
  ffprobe { duration_s:1102, codec:h264, 1920x1080 }
 user_metadata unchanged`,
-      rd: `0`,
-      s3: `small header range. not 2GB`,
-      os: `no index yet`
-    },
-    {
-      k: "Step 9 · Cover picture",
-      h: "One frame. A small JPEG next to the movie, not instead of it.",
-      kid: "Photograph the cover. The film stays in the warehouse. The photo goes on the 'previews' shelf.",
-      hit: ["pg","s3"],
-      pg: `derived_artifact 1
+    rd: `0`,
+    s3: `small header range. not 2GB`,
+    os: `no index yet`
+  },
+  {
+    k: "Step 9 · Cover picture",
+    h: "One frame. A small JPEG next to the movie, not instead of it.",
+    kid: "Photograph the cover. The film stays in the warehouse. The photo goes on the 'previews' shelf.",
+    hit: ["pg","s3"],
+    pg: `derived_artifact 1
  kind=poster
  key=derived/ast_vid1/poster.jpg`,
-      rd: `0`,
-      s3: `raw 2GB + poster 200KB`,
-      os: `no index`
-    },
-    {
-      k: "Step 10 · Table of contents",
-      h: "Now you can search 'hangar' without knowing the secret id.",
-      kid: "OpenSearch is the contents page at the back. Tear it out and the book (Postgres) is still there. You can write a new contents page.",
-      hit: ["pg","os","s3"],
-      pg: `asset.state=ready
+    rd: `0`,
+    s3: `raw 2GB + poster 200KB`,
+    os: `no index`
+  },
+  {
+    k: "Step 10 · Table of contents",
+    h: "Now you can search 'hangar' without knowing the secret id.",
+    kid: "OpenSearch is the contents page at the back. Tear it out and the book (Postgres) is still there. You can write a new contents page.",
+    hit: ["pg","os","s3"],
+    pg: `asset.state=ready
 17 rows in the notebook for this file`,
-      rd: `0`,
-      s3: `2GB + 200KB`,
-      os: `{ ast_vid1, Hangar approach, video, orbit-12, 1102s }`
-    },
-    {
-      k: "Failures · what breaks and how we get up",
-      h: "Each failure: what the person sees, what the machine does.",
-      kid: "Things fall. A dropped slice must not drop the cake. A closed tab must not restart the night.",
-      hit: [],
-      fail: true
-    }
-  ]
-};
+    rd: `0`,
+    s3: `2GB + 200KB`,
+    os: `{ ast_vid1, Hangar approach, video, orbit-12, 1102s }`
+  },
+  {
+    k: "Failures · what breaks and how we get up",
+    h: "Each failure: what the person sees, what the machine does.",
+    kid: "Things fall. A dropped slice must not drop the cake. A closed tab must not restart the night.",
+    hit: [],
+    fail: true
+  }
+];
 
-const FAIL = {
-  he: `<table>
-<tr><th>מה קרה</th><th>מה רואים במסך</th><th>מה המכונה עושה</th></tr>
-<tr><td>חלק 4 נפל ברשת</td><td>הבר נעצר רגע, אז ממשיך</td><td>רק PUT של חלק 4 חוזר. שורות 1–3 ב-Postgres נשארות. S3 כבר מחזיק אותן.</td></tr>
-<tr><td>סגרו את הטאב ב-38%</td><td>פותחים שוב — ממשיכים מ-38%</td><td>IndexedDB + שורות upload_part אומרות מה חסר. URLs חדשים אם פגו. לא מתחילים מ-0.</td></tr>
-<tr><td>Complete: checksum לא תואם</td><td>"הקובץ פגום, נסה שוב"</td><td>Abort ל-MPU ב-S3. asset=failed. המטא-דאטה מועתק לסשן חדש. 8 החלקים נזרקים.</td></tr>
-<tr><td>Redis נמחק באמצע</td><td>האחוז נעלם רגע</td><td>סופרים שורות ב-Postgres, כותבים את הפתק מחדש. אף בייט לא עולה שוב.</td></tr>
-<tr><td>Worker נפל ב-ffprobe</td><td>הסרטון כבר "uploaded", אפשר להוריד</td><td>ההודעה חוזרת ל-SQS. מנסים שוב. אחרי N כשלונות: partial, לא נעלם.</td></tr>
-<tr><td>הקובץ לא מוכר</td><td>תג unknown, התגיות שלך כן</td><td>detect נגמר. extractors מדולגים. זה טיפוס, לא שגיאה.</td></tr>
-<tr><td>שכחנו Complete, הלכנו הביתה</td><td>העלאה "תקועה"</td><td>אחרי 14 יום S3 מוחק חלקים יתומים. בלי זה משלמים על ארגזים זמניים.</td></tr>
-</table>
-<p class="kid" style="margin-top:12px">טכנית: חלק = יחידת retry. מחברת = אמת. פתק = תצוגה. מוצר: תמיד אחוז, מצב שלמות, ו-Pause/Resume. אף פעם לא ספינר בלי מספר.</p>`,
-  en: `<table>
+const FAIL = `<table>
 <tr><th>What broke</th><th>What the person sees</th><th>What the machine does</th></tr>
 <tr><td>Part 4 drops on the network</td><td>Bar pauses, then moves</td><td>Only part 4 is PUT again. Rows 1–3 stay. S3 already has them.</td></tr>
 <tr><td>Tab closed at 38%</td><td>Open again — continue at 38%</td><td>IndexedDB + upload_part rows list the missing parts. Fresh URLs if expired. Not from 0.</td></tr>
@@ -627,150 +434,36 @@ const FAIL = {
 <tr><td>Unknown type</td><td>unknown badge, your tags remain</td><td>detect ends. extractors skipped. A type, not an error.</td></tr>
 <tr><td>Forgot Complete, went home</td><td>Upload looks stuck</td><td>After 14 days S3 aborts orphan parts. Otherwise we pay for staging forever.</td></tr>
 </table>
-<p class="kid" style="margin-top:12px">Technical: a part is the retry unit. Notebook is truth. Note is display. Product: always a percent, an integrity state, Pause/Resume. Never a spinner with no number.</p>`
-};
+<p class="kid" style="margin-top:12px">Technical: a part is the retry unit. Notebook is truth. Note is display. Product: always a percent, an integrity state, Pause/Resume. Never a spinner with no number.</p>`;
 
-const UML = {
-  he: `<p class="note">ארבעה קופסאות. כתום = דיבור קטן (JSON). ירוק = הסרטון עצמו.</p>
-<div class="uml">
-  <div class="comp-grid">
-    <div class="comp plane"><div class="stereo">«component»</div><h3>מסך</h3><p>חותך ל-8, שולח 3, מציג אחוז</p></div>
-    <div class="comp plane"><div class="stereo">«component»</div><h3>שרת קטלוג</h3><p>מחברת + חתימת קישורים. בלי בייטים</p></div>
-    <div class="comp data"><div class="stereo">«component»</div><h3>S3</h3><p>פרוסות, אחר כך עוגה אחת</p></div>
-    <div class="comp"><div class="stereo">«component»</div><h3>העשרה</h3><p>מציץ בכריכה, לא בולע את הספר</p></div>
-  </div>
-</div>
-<p class="note">רצף: כוונה (JSON) → העברה (PUT ל-S3) → חותמת (Complete) → העשרה (range) → גלישה.</p>
-<div class="uml"><pre style="color:#d7dee6">לקוח --POST מטא-דאטה--> שרת --CreateMPU--> S3
-לקוח --PUT פרוסות----------------------> S3
-לקוח --complete--> שרת --CompleteMPU---> S3
-שרת --הודעה קטנה--> תור --> עובד --GET 64KB--> S3
-עובד --שורות טכניות--> Postgres --מסמך--> חיפוש</pre></div>
-<p class="note">מצבים: draft → uploading → uploaded → enriching → ready / partial. הורדה מותרת מ-uploaded.</p>`,
-  en: `<p class="note">Four boxes. Amber = small talk (JSON). Green = the movie itself.</p>
-<div class="uml">
-  <div class="comp-grid">
-    <div class="comp plane"><div class="stereo">«component»</div><h3>Client</h3><p>Cuts 8, sends 3, shows percent</p></div>
-    <div class="comp plane"><div class="stereo">«component»</div><h3>Catalog API</h3><p>Notebook + signed URLs. No bytes</p></div>
-    <div class="comp data"><div class="stereo">«component»</div><h3>S3</h3><p>Slices, then one cake</p></div>
-    <div class="comp"><div class="stereo">«component»</div><h3>Enrichment</h3><p>Peeks at the cover, does not swallow the book</p></div>
-  </div>
-</div>
-<p class="note">Sequence: intent (JSON) → transfer (PUT S3) → seal (Complete) → enrich (range) → browse.</p>
-<div class="uml"><pre style="color:#d7dee6">Client --POST metadata--> API --CreateMPU--> S3
-Client --PUT parts------------------------> S3
-Client --complete--> API --CompleteMPU----> S3
-API --tiny mail--> queue --> worker --GET 64KB--> S3
-worker --tech rows--> Postgres --document--> search</pre></div>
-<p class="note">States: draft → uploading → uploaded → enriching → ready / partial. Download from uploaded.</p>`
-};
-
-const UI = {
-  he: `<p class="note">מה האדם רואה באותם שלבים. בלי ספינר בלי מספר.</p>
-<div class="ui-grid">
-  <div class="fake">
-    <h3>העלאה · אחרי Start (שלב 1)</h3>
-    <div>Hangar approach</div>
-    <div class="chip">draft</div>
-    <div class="pbar"><i style="width:0"></i></div>
-    <div class="qrow"><span>0 / 8 פרוסות</span><span>מחכים למחסן</span></div>
-    <p class="note">הטופס כבר שמור. אפשר לסגור את המסך.</p>
-  </div>
-  <div class="fake">
-    <h3>העלאה · שלב 4</h3>
-    <div>Hangar approach</div>
-    <div class="chip">uploading</div>
-    <div class="pbar"><i style="width:38%"></i></div>
-    <div class="qrow"><span>3 / 8 נחתו</span><span>4,5,6 באוויר · Pause</span></div>
-    <p class="note">38% אמת מהמחברת. לא ניחוש.</p>
-  </div>
-  <div class="fake">
-    <h3>העלאה · אחרי Complete (שלב 6)</h3>
-    <div>Hangar approach</div>
-    <div class="chip">checksum ok · uploaded</div>
-    <div class="pbar"><i style="width:100%;background:#3ddc97"></i></div>
-    <div class="qrow"><span>אפשר להוריד</span><span>enriching…</span></div>
-    <p class="note">הסרטון חי. התמונה עוד בדרך.</p>
-  </div>
-  <div class="fake">
-    <h3>גלישה · שלב 10</h3>
-    <div style="height:72px;border-radius:8px;background:linear-gradient(#151920,#0d1016);display:grid;place-items:center">▶ פוסטר</div>
-    <div>Hangar approach</div>
-    <div class="chip">video</div> <div class="chip">orbit-12</div>
-    <div class="qrow"><span>18:22 · 2GB</span><span>ready</span></div>
-    <p class="note">תגיות שלך למעלה. ffprobe למטה.</p>
-  </div>
-</div>`,
-  en: `<p class="note">What a person sees at those steps. Never a spinner with no number.</p>
-<div class="ui-grid">
-  <div class="fake">
-    <h3>Ingest · after Start (step 1)</h3>
-    <div>Hangar approach</div>
-    <div class="chip">draft</div>
-    <div class="pbar"><i style="width:0"></i></div>
-    <div class="qrow"><span>0 / 8 slices</span><span>waiting on the warehouse</span></div>
-    <p class="note">The form is already saved. You can close the tab.</p>
-  </div>
-  <div class="fake">
-    <h3>Ingest · step 4</h3>
-    <div>Hangar approach</div>
-    <div class="chip">uploading</div>
-    <div class="pbar"><i style="width:38%"></i></div>
-    <div class="qrow"><span>3 / 8 landed</span><span>4,5,6 in flight · Pause</span></div>
-    <p class="note">38% is from the notebook. Not a guess.</p>
-  </div>
-  <div class="fake">
-    <h3>Ingest · after Complete (step 6)</h3>
-    <div>Hangar approach</div>
-    <div class="chip">checksum ok · uploaded</div>
-    <div class="pbar"><i style="width:100%;background:#3ddc97"></i></div>
-    <div class="qrow"><span>download works</span><span>enriching…</span></div>
-    <p class="note">The movie is alive. The cover is still coming.</p>
-  </div>
-  <div class="fake">
-    <h3>Browse · step 10</h3>
-    <div style="height:72px;border-radius:8px;background:linear-gradient(#151920,#0d1016);display:grid;place-items:center">▶ poster</div>
-    <div>Hangar approach</div>
-    <div class="chip">video</div> <div class="chip">orbit-12</div>
-    <div class="qrow"><span>18:22 · 2GB</span><span>ready</span></div>
-    <p class="note">Your tags on top. ffprobe below.</p>
-  </div>
-</div>`
-};
-
-let lang = "he";
 let i = 0;
 let tab = "flow";
+let mermaidDone = false;
 const $ = (id) => document.getElementById(id);
 
 function renderFlow() {
-  const s = STEPS[lang][i];
-  const L = I[lang];
+  const s = STEPS[i];
   const hit = (n) => (s.hit || []).includes(n) ? " hit" : "";
   if (s.fail) {
-    $("tab-flow").innerHTML = `<div class="kicker">${s.k}</div><h1>${s.h}</h1><p class="kid">${s.kid}</p>${FAIL[lang]}`;
+    $("tab-flow").innerHTML = `<div class="kicker">${s.k}</div><h1>${s.h}</h1><p class="kid">${s.kid}</p>${FAIL}`;
   } else {
-    $("tab-flow").innerHTML = `<div class="kicker">${s.k} · hangar.mp4 · 2GB · 8 פרוסות · 3 באוויר</div>
+    $("tab-flow").innerHTML = `<div class="kicker">${s.k} · hangar.mp4 · 2GB · 8 parts · 3 in flight</div>
       <h1>${s.h}</h1><p class="kid">${s.kid}</p>
       <div class="dbs">
-        <div class="db pg${hit("pg")}"><h2>${L.pg}</h2><pre>${s.pg}</pre></div>
-        <div class="db rd${hit("rd")}"><h2>${L.rd}</h2><pre>${s.rd}</pre></div>
-        <div class="db s3${hit("s3")}"><h2>${L.s3}</h2><pre>${s.s3}</pre></div>
-        <div class="db os${hit("os")}"><h2>${L.os}</h2><pre>${s.os}</pre></div>
+        <div class="db pg${hit("pg")}"><h2>Postgres notebook — rows that stay</h2><pre>${s.pg}</pre></div>
+        <div class="db rd${hit("rd")}"><h2>Redis sticky note — overwritten</h2><pre>${s.rd}</pre></div>
+        <div class="db s3${hit("s3")}"><h2>S3 warehouse — the boxes</h2><pre>${s.s3}</pre></div>
+        <div class="db os${hit("os")}"><h2>Index / mailbox</h2><pre>${s.os}</pre></div>
       </div>`;
   }
-  $("count").textContent = (i + 1) + " / " + STEPS[lang].length;
-  $("bar").style.width = ((i + 1) / STEPS[lang].length * 100) + "%";
+  $("count").textContent = (i + 1) + " / " + STEPS.length;
+  $("bar").style.width = ((i + 1) / STEPS.length * 100) + "%";
 }
 
-function renderStatic() {
-  $("tab-uml").innerHTML = UML[lang];
-  $("tab-ui").innerHTML = UI[lang];
-  $("t-flow").textContent = I[lang].flow;
-  $("t-uml").textContent = I[lang].uml;
-  $("t-ui").textContent = I[lang].ui;
-  $("prev").textContent = I[lang].prev;
-  $("next").textContent = I[lang].next;
+async function runMermaid() {
+  if (mermaidDone || !window.__mermaid) return;
+  mermaidDone = true;
+  await window.__mermaid.run({ querySelector: "#tab-uml .mermaid" });
 }
 
 function showTab(name) {
@@ -780,32 +473,22 @@ function showTab(name) {
     $("t-" + n).classList.toggle("on", n === name);
   });
   $("foot").style.display = name === "flow" ? "flex" : "none";
-}
-
-function apply(next) {
-  lang = next;
-  document.documentElement.lang = next;
-  document.documentElement.dir = next === "he" ? "rtl" : "ltr";
-  $("btn-en").classList.toggle("on", next === "en");
-  $("btn-he").classList.toggle("on", next === "he");
-  renderFlow();
-  renderStatic();
+  if (name === "uml") runMermaid();
 }
 
 $("prev").onclick = () => { i = Math.max(0, i - 1); renderFlow(); };
-$("next").onclick = () => { i = Math.min(STEPS[lang].length - 1, i + 1); renderFlow(); };
-$("btn-en").onclick = () => apply("en");
-$("btn-he").onclick = () => apply("he");
+$("next").onclick = () => { i = Math.min(STEPS.length - 1, i + 1); renderFlow(); };
 ["flow","uml","ui"].forEach((n) => $("t-" + n).onclick = () => showTab(n));
 document.addEventListener("keydown", (e) => {
   if (tab !== "flow") return;
-  if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
-  const fwd = document.documentElement.dir === "rtl" ? e.key === "ArrowLeft" : e.key === "ArrowRight";
-  i = fwd ? Math.min(STEPS[lang].length - 1, i + 1) : Math.max(0, i - 1);
+  if (e.key === "ArrowRight") i = Math.min(STEPS.length - 1, i + 1);
+  else if (e.key === "ArrowLeft") i = Math.max(0, i - 1);
+  else return;
   renderFlow();
 });
-apply("he");
+renderFlow();
 showTab("flow");
+setTimeout(runMermaid, 800);
 </script>
 </body>
 </html>
