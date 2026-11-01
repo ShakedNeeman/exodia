@@ -92,7 +92,7 @@
     <button type="button" id="prev" data-i="prev">הקודם</button>
     <button type="button" class="primary" id="next" data-i="next">הבא</button>
     <div class="bar"><i id="bar"></i></div>
-    <span class="count" id="count">1 / 9</span>
+    <span class="count" id="count">1 / 7</span>
   </footer>
 
 <script>
@@ -103,120 +103,80 @@ const T = {
     say: "מה להגיד",
     slides: [
       {
-        k: "שקף 1 · פתיחה",
-        h: "קטלוג מול מחסן. לא דרייב.",
-        html: `<p>עשרות טרה של קבצים מעורבים — מסמכים, תמונות, וידאו, רדאר. צריך להעלות אמין, לצרף מטא-דאטה, להעשיר לבד, ולמצוא בצורה לוגית.</p>
-        <p>הבייטים חיים ב-S3. המשמעות חיה ב-Postgres. אם מערבבים — זה לא מחזיק.</p>`,
-        say: "הבעיה היא לא אחסון. כבר יש להם טרות. הבעיה היא להכניס קבצים גדולים ומגוונים, ואז למצוא אותם."
+        k: "שקף 1 · הבעיה",
+        h: "עשרות טרה מפוזרים. ואי אפשר לדפדף בהם.",
+        html: `<p>זה מה שכתוב במטלה. האחסון כבר גדול, והוא גדל. הקבצים לא מסוג אחד, והם לא מסודרים בדרך שאנשים יכולים באמת למצוא.</p>
+        <p>המערכת צריכה שתי יכולות: <b>להעלות</b> ו<b>לגלוש בצורה לוגית</b>.</p>`,
+        say: "הבעיה היא לא עוד דיסק. הבעיה היא להכניס קבצים גדולים ומגוונים בלי לאבד אותם, ואז למצוא אותם בלי ללכת ל-/mnt/storage3."
       },
       {
-        k: "שקף 2 · ארבע דרישות",
-        h: "מה המטלה ביקשה",
-        html: `<div class="grid4">
-          <div class="card"><b>העלאה אמינה</b><span>גם טרה, גם רשת שנופלת</span></div>
-          <div class="card"><b>מטא-דאטה בהעלאה</b><span>המשתמש ממלא לפני הבייטים</span></div>
-          <div class="card"><b>העשרה איפה שאפשר</b><span>המערכת משלימה לבד</span></div>
-          <div class="card"><b>גלישה לוגית</b><span>אוספים ופילטרים, לא תיקיות</span></div>
-        </div>`,
-        say: "ארבע דרישות. כל בחירה בפרויקט באה מאחת מהן. לא אספתי סטאק."
+        k: "שקף 2 · הדרישות",
+        h: "ארבע דרישות. ככה פתרתי כל אחת.",
+        html: `<table>
+          <tr><th>המטלה ביקשה</th><th>איך פתרתי</th></tr>
+          <tr><td>העלאות אמינות בהיקף טרה</td><td>הדפדפן מעלה חלקים ישר ל-S3. חלק שנפל חוזר לבד. טאב שנסגר ממשיך, לא מתחיל מחדש.</td></tr>
+          <tr><td>דאטה מגוון — מסמכים, תמונות, וידאו, רדאר</td><td>רשומה לוגית בקטלוג. האובייקט ב-S3 יכול להיות אחד או כמה. סוג לא מוכר נשאר אזרח מלא.</td></tr>
+          <tr><td>מטא-דאטה של המשתמש בזמן ההעלאה</td><td>נשמר לפני הבייט הראשון. גם העלאה שנפלה אחרי שש שעות עדיין יש לה שם ומשימה.</td></tr>
+          <tr><td>העשרה טכנית אוטומטית איפה שאפשר</td><td>אחרי שהקובץ נחת, עובד ברקע שולף כותרות. אם אין parser — הקובץ לא נעלם.</td></tr>
+        </table>`,
+        say: "כל שורה במטלה הפכה לכלל עיצוב. לא התחלתי מכלים — התחלתי מהדרישה."
       },
       {
-        k: "שקף 3 · שני מישורים",
-        h: "שני כבישים. אף פעם לא אותו תהליך.",
+        k: "שקף 3 · הרעיון",
+        h: "פיצלתי בייטים ממשמעות.",
         html: `<div class="grid2">
-          <div class="card rd"><b>מישור בקרה · כתום</b><span>דפדפן ↔ API. JSON קטן: שם, תגיות, סשן, חיפוש. Spring + Postgres.</span></div>
-          <div class="card" style="border-color:#1f5a40"><b>מישור בייטים · ירוק</b><span>דפדפן ↔ S3. החלקים עצמם. ה-API לא רואה אותם. הוא רק חותם URL.</span></div>
+          <div class="card" style="border-color:#1f5a40"><b>המחסן · Amazon S3</b><span>הבייטים. העלאה בחלקים. השרת לא מעביר את הקובץ — הוא רק חותם קישור זמני.</span></div>
+          <div class="card rd"><b>הקטלוג · API + Postgres</b><span>המשמעות. שם, אוסף, תגיות, מצב, הרשאות. מכאן מחפשים, לא מהמחסן.</span></div>
         </div>
-        <p style="margin-top:16px">S3 שומר חלקים ומדביק ב-Complete. אנחנו מנהלים את הסשן. S3 לא מריץ טרנזקציית SQL ולא מנהל וידאו.</p>`,
-        say: "חתמתי URL. לא העברתי קובץ. ברגע שמכניסים טרה דרך השרת, מישור הבקרה נהיה צינור."
+        <p style="margin-top:16px">אם ה-API מעביר טרה, הוא נהיה צינור. אם הקטלוג הוא עץ תיקיות, חוזרים לאותו בלגן.</p>`,
+        say: "חתמתי URL. לא העברתי קובץ. S3 שומר ומדביק חלקים. הקטלוג אומר מה זה ולמי מותר לראות."
       },
       {
-        k: "שקף 4 · ארבעה שלבים",
-        h: "לקוח, שרת, אחסון, עיבוד — בכל שלב",
+        k: "שקף 4 · מקצה לקצה",
+        h: "לקוח, שרת, אחסון, עיבוד — כמו שביקשו.",
         html: `<table>
-          <tr><th></th><th>לקוח</th><th>שרת</th><th>S3</th><th>עיבוד</th></tr>
-          <tr><td><b>1 כוונה</b></td><td>שולח מטא-דאטה</td><td>יוצר draft + סשן</td><td>פותח multipart</td><td>אין</td></tr>
-          <tr><td><b>2 העברה</b></td><td>PUT חלקים ישר ל-S3</td><td>רושם חלק שהסתיים</td><td>שומר חלקים</td><td>אין</td></tr>
-          <tr><td><b>3 חותמת</b></td><td>complete</td><td>בודק checksum</td><td>מדביק לאובייקט</td><td>אין עדיין</td></tr>
-          <tr><td><b>4 העשרה</b></td><td>רואה / מחפש</td><td>מעדכן קטלוג</td><td>קריאה + נגזרת</td><td>detect → extract</td></tr>
-        </table>`,
-        say: "הקובץ שימושי מ-uploaded. העשרה רצה מאחור. אם parser נכשל — הקובץ לא נעלם."
+          <tr><th></th><th>לקוח</th><th>שרת</th><th>אחסון</th><th>עיבוד</th></tr>
+          <tr><td><b>1 כוונה</b></td><td>מטא-דאטה + קובץ</td><td>יוצר רשומה</td><td>פותח העלאה בחלקים</td><td>—</td></tr>
+          <tr><td><b>2 העברה</b></td><td>חלקים ישר ל-S3</td><td>זוכר מה נחת</td><td>שומר חלקים</td><td>—</td></tr>
+          <tr><td><b>3 חותמת</b></td><td>סיימתי</td><td>בודק שלמות</td><td>מרכיב קובץ אחד</td><td>—</td></tr>
+          <tr><td><b>4 העשרה</b></td><td>גלישה</td><td>מעדכן קטלוג</td><td>קריאה + תצוגה</td><td>שולף מטא-דאטה טכני</td></tr>
+        </table>
+        <p style="margin-top:12px">מהשלב השלישי הקובץ כבר ניתן להורדה. העשרה לא חוסמת אותו.</p>`,
+        say: "זה כל הפלואו. ארבעה שלבים, ארבע שכבות. אם parser נכשל אחרי זה — הקובץ עדיין בקטלוג."
       },
       {
-        k: "שקף 5 · Postgres מול Redis",
-        h: "מחברת מול מד מהירות",
-        html: `<div class="grid2">
-          <div class="card pg"><b>Postgres · המחברת</b>
-            <p>טבלאות. שורות. אי אפשר לאבד. מי הקובץ, מצב, אילו חלקים נחתו, תגיות, הרשאות.</p>
-            <p style="margin-top:8px">אין קי-וואליו. יש מפתח ראשי + עמודות.</p>
-          </div>
-          <div class="card rd"><b>Redis · מד המהירות</b>
-            <p>קי → ערך בזיכרון. דורסים כל שנייה. 62%, 187MB/s.</p>
-            <p style="margin-top:8px">אם מוחקים — אף קובץ לא נעלם.</p>
-          </div>
-        </div>`,
-        say: "Redis נשאל 'מה האחוז עכשיו?'. Postgres נשאל 'אילו חלקים חסרים?'. לא הפוך."
-      },
-      {
-        k: "שקף 6 · אותו רגע, שתי כתיבות",
-        h: "חלק 3812 נחת",
-        html: `<div class="grid2">
-          <div class="card pg"><b>Postgres · שורה חדשה</b>
-            <span class="mono">upload_part
-session_id   upl_44c
-part_number  3812
-etag         "c90e…"
-checksum     crc64:71ab…</span>
-            <p style="margin-top:8px">עובדה. בשביל resume מחר בבוקר.</p>
-          </div>
-          <div class="card rd"><b>Redis · דריסת מפתח</b>
-            <span class="mono">progress:upl_44c
-{
-  "pct": 62,
-  "mbps": 187,
-  "part": 3812
-}</span>
-            <p style="margin-top:8px">תצוגה. TTL. אפשר לבנות מחדש מהמחברת.</p>
-          </div>
-        </div>`,
-        say: "שתי כתיבות, שני תפקידים. Postgres זוכר. Redis מציג."
-      },
-      {
-        k: "שקף 7 · אם אחד נופל",
-        h: "רק המחברת היא קריטית",
+        k: "שקף 5 · הכלים",
+        h: "סטאק קטן. כל כלי לדרישה.",
         html: `<table>
-          <tr><th>מה נשבר</th><th>מה קורה</th></tr>
-          <tr><td>Redis נמחק</td><td>הבר במסך נעלם לרגע. ממשיכים מהחלקים ב-Postgres. אף בייט לא עולה שוב</td></tr>
-          <tr><td>חלק אחד נכשל</td><td>רק הוא חוזר. לא כל ה-1.5TB</td></tr>
-          <tr><td>Worker נפל</td><td>הקובץ כבר uploaded. ההודעה חוזרת לתור</td></tr>
-          <tr><td>Postgres נמחק</td><td>אין קטלוג, אין resume. זו הקטסטרופה — לכן גיבויים</td></tr>
+          <tr><th>שכבה</th><th>כלי</th><th>למה</th></tr>
+          <tr><td>העלאה וגלישה</td><td>React</td><td>תור ארוך, resume, inspector</td></tr>
+          <tr><td>קטלוג</td><td>Spring Boot + Postgres</td><td>רשומות, מצבים, הרשאות</td></tr>
+          <tr><td>בייטים</td><td>Amazon S3</td><td>העלאה בחלקים בהיקף טרה</td></tr>
+          <tr><td>העשרה</td><td>Python ברקע</td><td>שם חיים הפרסרים של תמונה, וידאו, רדאר</td></tr>
+          <tr><td>חיפוש</td><td>OpenSearch</td><td>פילטרים על קטלוג גדול</td></tr>
         </table>`,
-        say: "אמין = חלק שנפל לא מפיל קובץ, וטאב שנסגר לא מתחיל לילה מחדש."
+        say: "ה-API הוא קטלוג, לא צינור. העובדים הם פייתון, כי שם האקוסיסטם של הקבצים. S3 כי שם multipart."
       },
       {
-        k: "שקף 8 · הכלים",
-        h: "כל בחירה פותרת דרישה",
-        html: `<table>
-          <tr><th>שכבה</th><th>בחירה</th><th>למה</th></tr>
-          <tr><td>בייטים</td><td>Amazon S3</td><td>multipart, checksums, 50TB</td></tr>
-          <tr><td>אמת</td><td>PostgreSQL</td><td>יחסים + מכונת מצבים</td></tr>
-          <tr><td>תצוגה חיה</td><td>Redis</td><td>אחוזים. לא יומן</td></tr>
-          <tr><td>API</td><td>Spring Boot</td><td>קטלוג, לא צינור</td></tr>
-          <tr><td>עובדים</td><td>Python</td><td>הפורמטים חיים שם</td></tr>
-          <tr><td>חיפוש</td><td>OpenSearch</td><td>פילטרים. אפשר לבנות מחדש</td></tr>
-        </table>`,
-        say: "S3 הוא המחסן. Postgres המחברת. Redis המד. OpenSearch האינדקס בסוף הספר."
-      },
-      {
-        k: "שקף 9 · סיום",
-        h: "שלושה דברים שלא אהפוך",
+        k: "שקף 6 · החלטות",
+        h: "ארבעה דברים שלא אהפוך.",
         html: `<div class="grid2">
-          <div class="card"><b>בייטים לא ב-API</b><span>presigned multipart ל-S3</span></div>
-          <div class="card"><b>מטא-דאטה ממדרגה ראשונה</b><span>נשמר ב-draft, לפני הבייטים</span></div>
-          <div class="card"><b>unknown הוא טיפוס</b><span>parser שנכשל לא מחביא קובץ</span></div>
-          <div class="card"><b>גלישה היא קטלוג</b><span>אוספים + פילטרים, לא /mnt/storage3</span></div>
+          <div class="card"><b>הקובץ לא עובר בשרת</b><span>אחרת כל טרה עולה פעמיים.</span></div>
+          <div class="card"><b>מטא-דאטה לפני הבייטים</b><span>אחרת העלאה שנפלה היא רק hash בלי שם.</span></div>
+          <div class="card"><b>העשרה לא מחביאה קובץ</b><span>במטלה כתוב where possible. unknown הוא טיפוס.</span></div>
+          <div class="card"><b>גלישה לפי אוספים, לא תיקיות</b><span>עץ POSIX הוא איך העזבון נהיה לא שמיש.</span></div>
         </div>`,
-        say: "אחרי זה פותחים את מסך ההעלאה ואת מסך הגלישה. אם שואלים לעומק — עוברים ל-UML."
+        say: "אם שואלים למה לא העלאה רגילה דרך ה-API — כי זה שובר את דרישת הטרה. אם שואלים למה לא עץ תיקיות — כי זה הדבר שכבר יש להם."
+      },
+      {
+        k: "שקף 7 · המסכים",
+        h: "העלאה, ואז גלישה לוגית.",
+        html: `<div class="grid2">
+          <div class="card rd"><b>Ingest</b><span>קודם טופס. אחר כך תור עם אחוזים ושלמות. SIGMF הוא קובץ אחד עם sidecar.</span></div>
+          <div class="card"><b>Browse</b><span>אוספים משמאל, פילטרים למעלה, כרטיס עם מטא-דאטה של המשתמש ושל המכונה.</span></div>
+        </div>
+        <p style="margin-top:16px">אין פונקציונליות מאחורי המסכים — זה מה שביקשו. אחר כך אפשר לפתוח UML אם נכנסים לעומק.</p>`,
+        say: "עכשיו עוברים למסך ההעלאה, אחר כך לגלישה. סיפור אחד: מכניסים עם משמעות, מוצאים בלי ללכת לתיקייה."
       }
     ]
   },
@@ -226,120 +186,80 @@ checksum     crc64:71ab…</span>
     say: "Say this",
     slides: [
       {
-        k: "Slide 1 · Open",
-        h: "A catalog in front of a store. Not a drive.",
-        html: `<p>Tens of terabytes of mixed files — docs, images, video, radar. Uploads must be reliable, metadata attached at ingest, technical enrichment automatic, browse logical.</p>
-        <p>Bytes live in S3. Meaning lives in Postgres. Mix those two and it does not scale.</p>`,
-        say: "Storage is not the problem. They already have terabytes. The problem is getting diverse files in, then finding them."
+        k: "Slide 1 · The problem",
+        h: "Tens of TBs, scattered. And you cannot browse them.",
+        html: `<p>That is the brief. Storage is already large and still growing. The files are not one type, and they are not organized in a way people can actually find.</p>
+        <p>The system needs two jobs: <b>upload</b>, and <b>browse in a logical way</b>.</p>`,
+        say: "The problem is not another disk. It is getting large, diverse files in without losing them, then finding them without walking /mnt/storage3."
       },
       {
-        k: "Slide 2 · Four requirements",
-        h: "What the brief asked",
-        html: `<div class="grid4">
-          <div class="card"><b>Reliable ingest</b><span>Terabytes, flaky networks</span></div>
-          <div class="card"><b>Metadata at upload</b><span>User fills this before bytes move</span></div>
-          <div class="card"><b>Enrich where possible</b><span>The system fills technical fields</span></div>
-          <div class="card"><b>Logical browse</b><span>Collections and facets, not folders</span></div>
-        </div>`,
-        say: "Four requirements. Every choice maps to one of them. I did not collect a stack."
+        k: "Slide 2 · The requirements",
+        h: "Four asks. This is how I solved each.",
+        html: `<table>
+          <tr><th>The brief</th><th>How I solved it</th></tr>
+          <tr><td>Reliable uploads at terabyte scale</td><td>The browser uploads parts straight to S3. A failed part retries alone. A closed tab resumes, it does not restart.</td></tr>
+          <tr><td>Highly diverse data — docs, images, video, radar</td><td>A logical catalog row. S3 may hold one object or several. Unknown types stay first-class.</td></tr>
+          <tr><td>User metadata at upload time</td><td>Saved before the first byte. A transfer that dies after six hours still has a name and a mission.</td></tr>
+          <tr><td>Automatic technical enrichment where possible</td><td>After the file is sealed, a worker reads headers. No parser — the file is still there.</td></tr>
+        </table>`,
+        say: "Every line in the brief became a design rule. I did not start from tools. I started from the requirement."
       },
       {
-        k: "Slide 3 · Two planes",
-        h: "Two roads. Never the same process.",
+        k: "Slide 3 · The idea",
+        h: "I split bytes from meaning.",
         html: `<div class="grid2">
-          <div class="card rd"><b>Control plane · amber</b><span>Browser ↔ API. Small JSON: name, tags, session, search. Spring + Postgres.</span></div>
-          <div class="card" style="border-color:#1f5a40"><b>Data plane · green</b><span>Browser ↔ S3. The parts themselves. The API never sees them. It only signs a URL.</span></div>
+          <div class="card" style="border-color:#1f5a40"><b>The store · Amazon S3</b><span>The bytes. Multipart upload. The server does not carry the file — it only signs a short-lived URL.</span></div>
+          <div class="card rd"><b>The catalog · API + Postgres</b><span>The meaning. Name, collection, tags, state, permissions. This is where you search, not the bucket.</span></div>
         </div>
-        <p style="margin-top:16px">S3 stores parts and concatenates on Complete. We drive the session. S3 does not run SQL transactions and does not manage video.</p>`,
-        say: "I signed a URL. I did not stream a file. Put a terabyte through the API and the control plane becomes a pipe."
+        <p style="margin-top:16px">If the API carries a terabyte, it becomes a pipe. If the catalog is a folder tree, you recreate the mess.</p>`,
+        say: "I signed a URL. I did not stream a file. S3 keeps and assembles parts. The catalog says what it is and who may see it."
       },
       {
-        k: "Slide 4 · Four stages",
-        h: "Client, server, storage, processing — at every stage",
+        k: "Slide 4 · End to end",
+        h: "Client, server, storage, processing — as asked.",
         html: `<table>
-          <tr><th></th><th>Client</th><th>Server</th><th>S3</th><th>Processing</th></tr>
-          <tr><td><b>1 Intent</b></td><td>Sends metadata</td><td>Creates draft + session</td><td>Opens multipart</td><td>Idle</td></tr>
-          <tr><td><b>2 Transfer</b></td><td>PUT parts straight to S3</td><td>Records finished parts</td><td>Holds parts</td><td>Idle</td></tr>
-          <tr><td><b>3 Seal</b></td><td>complete</td><td>Checks checksums</td><td>Assembles object</td><td>Not yet</td></tr>
-          <tr><td><b>4 Enrich</b></td><td>Browse / search</td><td>Updates catalog</td><td>Read + derivative</td><td>detect → extract</td></tr>
-        </table>`,
-        say: "The file is usable from uploaded. Enrichment runs behind. A failed parser does not hide the file."
+          <tr><th></th><th>Client</th><th>Server</th><th>Storage</th><th>Processing</th></tr>
+          <tr><td><b>1 Intent</b></td><td>Metadata + file</td><td>Creates the record</td><td>Opens multipart</td><td>—</td></tr>
+          <tr><td><b>2 Transfer</b></td><td>Parts straight to S3</td><td>Remembers what landed</td><td>Holds parts</td><td>—</td></tr>
+          <tr><td><b>3 Seal</b></td><td>Done</td><td>Checks integrity</td><td>Assembles one object</td><td>—</td></tr>
+          <tr><td><b>4 Enrich</b></td><td>Browse</td><td>Updates catalog</td><td>Read + preview</td><td>Extracts technical metadata</td></tr>
+        </table>
+        <p style="margin-top:12px">From stage three the file is downloadable. Enrichment does not block it.</p>`,
+        say: "That is the whole flow. Four stages, four layers. If a parser fails after that, the file is still in the catalog."
       },
       {
-        k: "Slide 5 · Postgres vs Redis",
-        h: "Notebook vs speedometer",
-        html: `<div class="grid2">
-          <div class="card pg"><b>Postgres · the notebook</b>
-            <p>Tables. Rows. Must not lose. Which file, which state, which parts landed, tags, ACLs.</p>
-            <p style="margin-top:8px">Not a key-value store. A primary key plus columns.</p>
-          </div>
-          <div class="card rd"><b>Redis · the speedometer</b>
-            <p>Key → value in memory. Overwritten every second. 62%, 187MB/s.</p>
-            <p style="margin-top:8px">Flush it and no file is lost.</p>
-          </div>
-        </div>`,
-        say: "Ask Redis 'what is the percent?'. Ask Postgres 'which parts are missing?'. Never the other way around."
-      },
-      {
-        k: "Slide 6 · Same moment, two writes",
-        h: "Part 3812 just landed",
-        html: `<div class="grid2">
-          <div class="card pg"><b>Postgres · a new row</b>
-            <span class="mono">upload_part
-session_id   upl_44c
-part_number  3812
-etag         "c90e…"
-checksum     crc64:71ab…</span>
-            <p style="margin-top:8px">A fact. So we can resume tomorrow morning.</p>
-          </div>
-          <div class="card rd"><b>Redis · overwrite a key</b>
-            <span class="mono">progress:upl_44c
-{
-  "pct": 62,
-  "mbps": 187,
-  "part": 3812
-}</span>
-            <p style="margin-top:8px">A display. TTL. Rebuildable from the notebook.</p>
-          </div>
-        </div>`,
-        say: "Two writes, two jobs. Postgres remembers. Redis shows."
-      },
-      {
-        k: "Slide 7 · If one dies",
-        h: "Only the notebook is critical",
+        k: "Slide 5 · Tools",
+        h: "A small stack. Each tool for a requirement.",
         html: `<table>
-          <tr><th>What breaks</th><th>What happens</th></tr>
-          <tr><td>Redis flushed</td><td>The bar vanishes for a moment. Resume from Postgres parts. No byte is re-sent</td></tr>
-          <tr><td>One part fails</td><td>Only that part retries. Not the whole 1.5TB</td></tr>
-          <tr><td>Worker dies</td><td>The file is already uploaded. The queue message comes back</td></tr>
-          <tr><td>Postgres lost</td><td>No catalog, no resume. That is the disaster — hence backups</td></tr>
+          <tr><th>Layer</th><th>Tool</th><th>Why</th></tr>
+          <tr><td>Upload and browse</td><td>React</td><td>Long queue, resume, inspector</td></tr>
+          <tr><td>Catalog</td><td>Spring Boot + Postgres</td><td>Records, states, permissions</td></tr>
+          <tr><td>Bytes</td><td>Amazon S3</td><td>Multipart at terabyte scale</td></tr>
+          <tr><td>Enrichment</td><td>Python in the background</td><td>That is where image, video, radar parsers live</td></tr>
+          <tr><td>Search</td><td>OpenSearch</td><td>Facets over a large catalog</td></tr>
         </table>`,
-        say: "Reliable means a dropped part does not drop the file, and a closed tab does not restart the night."
+        say: "The API is a catalog, not a pipe. Workers are Python because that is the file ecosystem. S3 because that is multipart."
       },
       {
-        k: "Slide 8 · Tools",
-        h: "Every choice solves a requirement",
-        html: `<table>
-          <tr><th>Layer</th><th>Choice</th><th>Why</th></tr>
-          <tr><td>Bytes</td><td>Amazon S3</td><td>multipart, checksums, 50TB</td></tr>
-          <tr><td>Truth</td><td>PostgreSQL</td><td>Relations + a real state machine</td></tr>
-          <tr><td>Live view</td><td>Redis</td><td>Percents. Not the ledger</td></tr>
-          <tr><td>API</td><td>Spring Boot</td><td>A catalog, not a pipe</td></tr>
-          <tr><td>Workers</td><td>Python</td><td>The format ecosystem lives there</td></tr>
-          <tr><td>Search</td><td>OpenSearch</td><td>Facets. Rebuildable</td></tr>
-        </table>`,
-        say: "S3 is the warehouse. Postgres the notebook. Redis the gauge. OpenSearch the index at the back of the book."
-      },
-      {
-        k: "Slide 9 · Close",
-        h: "Three things I would not reverse",
+        k: "Slide 6 · Decisions",
+        h: "Four things I would not reverse.",
         html: `<div class="grid2">
-          <div class="card"><b>Bytes stay out of the API</b><span>presigned multipart to S3</span></div>
-          <div class="card"><b>Metadata is first-class</b><span>Committed in draft, before bytes</span></div>
-          <div class="card"><b>Unknown is a type</b><span>A failed parser does not hide the file</span></div>
-          <div class="card"><b>Browse is a catalog</b><span>Collections + facets, not /mnt/storage3</span></div>
+          <div class="card"><b>The file does not go through the server</b><span>Otherwise every terabyte is paid twice.</span></div>
+          <div class="card"><b>Metadata before bytes</b><span>Otherwise a failed upload is only a hash with no name.</span></div>
+          <div class="card"><b>Enrichment does not hide a file</b><span>The brief says where possible. Unknown is a type.</span></div>
+          <div class="card"><b>Browse by collections, not folders</b><span>A POSIX tree is how this estate became unusable.</span></div>
         </div>`,
-        say: "Then open the ingest screen and the browse screen. If they go deep, switch to the UML page."
+        say: "If they ask why not a normal upload through the API — it breaks the terabyte requirement. If they ask why not a folder tree — that is what they already have."
+      },
+      {
+        k: "Slide 7 · The screens",
+        h: "Ingest, then logical browse.",
+        html: `<div class="grid2">
+          <div class="card rd"><b>Ingest</b><span>Form first. Then a queue with percent and integrity. SIGMF is one asset with a sidecar.</span></div>
+          <div class="card"><b>Browse</b><span>Collections on the left, facets on top, a card with user metadata and machine metadata.</span></div>
+        </div>
+        <p style="margin-top:16px">The screens are not wired — that is what the brief asked. UML is there if they go deep.</p>`,
+        say: "Now open ingest, then browse. One story: you put meaning in with the file, you find it without walking a folder."
       }
     ]
   }
