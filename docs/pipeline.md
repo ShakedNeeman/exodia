@@ -18,6 +18,20 @@ Example: one-hour UAV pass over Khan Younis, `khan-younis-uav.mp4`, 8 GB, **32 p
 | 9 Derive | One poster frame | 1 `derived_artifact` | idle | + 200 KB poster. raw 8 GB unchanged | no search doc |
 | 10 Index | Browse works | asset → `ready`. ~41 rows total for this file | 0 keys | raw + poster | **1 search document**. SQS deleted |
 
+On the wire at each step (also shown in the walkthrough):
+
+| Step | Calls |
+|---|---|
+| 0 | none |
+| 1 | `POST /v1/uploads` (JSON) → API `CreateMultipartUpload` → `201` + presigned URLs |
+| 2 | `PUT` parts 1–3 **to S3 only**. No catalog call until an ETag returns |
+| 3 | S3 `200 ETag` then `POST /v1/uploads/{id}/parts` `{n, etag, crc}` |
+| 4 | two more `/parts`, `PUT` 4–6 to S3, optional `GET …/urls` if a URL 403s |
+| 5 | last `POST …/parts` for n=32 |
+| 6 | `POST …/complete` → `CompleteMultipartUpload` → `DEL` Redis → SQS `asset.uploaded` |
+| 7–9 | worker: S3 range GET, `PATCH …/technical`, `PUT` poster. Browser idle |
+| 10 | worker indexes OpenSearch. Person: `GET /v1/search` then presigned `GET` poster from S3 |
+
 Counts to say out loud:
 
 - Redis never has 32 keys. It has **one** key, overwritten, then deleted.

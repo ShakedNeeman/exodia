@@ -78,6 +78,16 @@
     .pbar i { display: block; height: 100%; background: var(--accent); }
     .chip { display: inline-block; font-size: 11px; font-family: var(--mono); border: 1px solid var(--line); border-radius: 99px; padding: 2px 8px; }
     .note { color: var(--muted); font-size: 14px; max-width: 62em; }
+    .calls { background: #10141a; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin: 0 0 12px; }
+    .calls h2 { margin: 0 0 8px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); font-weight: 500; }
+    .call { display: grid; grid-template-columns: 92px 1fr; gap: 8px 12px; align-items: start; padding: 7px 0; border-top: 1px solid #222a33; font-size: 13px; }
+    .call:first-of-type { border-top: 0; }
+    .who { font-family: var(--mono); font-size: 11px; color: var(--faint); }
+    .line { font-family: var(--mono); font-size: 12.5px; }
+    .line .verb { color: var(--accent); font-weight: 500; }
+    .line .verb.bytes { color: #3ddc97; }
+    .line .verb.work { color: #7eb6ff; }
+    .why { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
   </style>
 </head>
 <body>
@@ -292,7 +302,8 @@ collection already exists:
     s3: `bucket sentinel-raw exists
 no khan-younis-uav.mp4`,
     os: `queue empty
-search empty`
+search empty`,
+    calls: []
   },
   {
     k: "Step 1 · Start",
@@ -327,7 +338,13 @@ parts stored: 0
 S3 does NOT know part_count
 GET file: missing`,
     os: `no message
-no search doc`
+no search doc`,
+    calls: [
+      { plane: "json", who: "Client → API", line: "POST /v1/uploads", why: "JSON only: filename, 8GB, collection col_gaza, tags. No movie bytes." },
+      { plane: "ctrl", who: "API → S3", line: "CreateMultipartUpload", why: "Opens mpu_X. S3 is not told there will be 32 parts." },
+      { plane: "ctrl", who: "API → Redis", line: "SET progress:upl_99", why: "Fridge note pct=0. One key." },
+      { plane: "json", who: "API → Client", line: "201 Created", why: "asset_id, session_id, part_count=32, first batch of presigned PUT URLs." }
+    ]
   },
   {
     k: "Step 2 · Three slices in the air",
@@ -341,7 +358,12 @@ part_count=32 is only in our session row.`,
     s3: `PUT part 1, 2, 3 in flight
 S3 sees part numbers, not a total
 nothing glued yet`,
-    os: `empty`
+    os: `empty`,
+    calls: [
+      { plane: "bytes", who: "Client → S3", line: "PUT …/partNumber=1  (256MB)", why: "Straight to the warehouse. Catalog API is not on this path." },
+      { plane: "bytes", who: "Client → S3", line: "PUT …/partNumber=2  (256MB)", why: "Same, in parallel. Max 3 in flight." },
+      { plane: "bytes", who: "Client → S3", line: "PUT …/partNumber=3  (256MB)", why: "Still in the air. No POST to our API until S3 answers with an ETag." }
+    ]
   },
   {
     k: "Step 3 · Slice 2 arrives first",
@@ -360,7 +382,11 @@ still 1 note`,
     s3: `stored: part 2
 in flight: 1, 3
 S3 still has no total`,
-    os: `empty`
+    os: `empty`,
+    calls: [
+      { plane: "bytes", who: "S3 → Client", line: "200  ETag=e2", why: "Part 2 landed first. Bytes never went through the API." },
+      { plane: "json", who: "Client → API", line: "POST /v1/uploads/upl_99/parts", why: "{ n: 2, etag: \"e2\", crc } — tiny JSON. Then Postgres INSERT and Redis SET." }
+    ]
   },
   {
     k: "Step 4 · 1 and 3 land. Send 4,5,6",
@@ -372,7 +398,13 @@ S3 still has no total`,
 missing = 4…32`,
     rd: `{ "pct": 9, "done": 3, "of": 32 }`,
     s3: `stored 1–3 · in flight 4–6`,
-    os: `empty`
+    os: `empty`,
+    calls: [
+      { plane: "json", who: "Client → API", line: "POST /v1/uploads/upl_99/parts  (n=1)", why: "Idempotent. Same part + same etag is a no-op." },
+      { plane: "json", who: "Client → API", line: "POST /v1/uploads/upl_99/parts  (n=3)", why: "Now 3 rows in the notebook. Redis overwritten to 9%." },
+      { plane: "bytes", who: "Client → S3", line: "PUT parts 4, 5, 6", why: "Fill the 3 slots that just freed. Still no complete." },
+      { plane: "json", who: "Client → API", line: "GET /v1/uploads/upl_99/urls?from=4", why: "If a presigned URL expired (403), ask for a fresh batch. Not a re-upload of 1–3." }
+    ]
   },
   {
     k: "Step 5 · All 32 slices stored",
@@ -385,7 +417,10 @@ asset still uploading`,
     rd: `{ "pct": 100, "done": 32, "of": 32 }`,
     s3: `32 staging parts
 GET khan-younis-uav.mp4 → 404`,
-    os: `empty`
+    os: `empty`,
+    calls: [
+      { plane: "json", who: "Client → API", line: "POST /v1/uploads/upl_99/parts  (n=32)", why: "Last slice reported. 32 rows. Still no Complete — GET of the object is 404." }
+    ]
   },
   {
     k: "Step 6 · Done · glue",
@@ -401,7 +436,14 @@ technical_metadata 0`,
     s3: `one object 8GB
 GET works`,
     os: `SQS { "asset_id": "ast_uav1" }
-tiny message, not 8GB`
+tiny message, not 8GB`,
+    calls: [
+      { plane: "json", who: "Client → API", line: "POST /v1/uploads/upl_99/complete", why: "Body: [{n, etag, crc} × 32]. Not the 8GB file." },
+      { plane: "ctrl", who: "API → S3", line: "CompleteMultipartUpload", why: "First time S3 sees the ordered list of 32 etags. Glue." },
+      { plane: "ctrl", who: "API → Redis", line: "DEL progress:upl_99", why: "Fridge note thrown away." },
+      { plane: "work", who: "API → SQS", line: "SendMessage asset.uploaded", why: "Tiny { asset_id: ast_uav1 }. Wakes a worker later." },
+      { plane: "json", who: "API → Client", line: "200  state=uploaded", why: "Download is allowed now. Cover picture is not ready yet." }
+    ]
   },
   {
     k: "Step 7 · Enrich · what is it?",
@@ -414,7 +456,12 @@ tiny message, not 8GB`
 asset.state=enriching`,
     rd: `0`,
     s3: `GET bytes=0-65535 of 8GB`,
-    os: `worker has the mail`
+    os: `worker has the mail`,
+    calls: [
+      { plane: "work", who: "SQS → Worker", line: "ReceiveMessage", why: "Not a client HTTP call. Browser is idle." },
+      { plane: "bytes", who: "Worker → S3", line: "GET  Range: bytes=0-65535", why: "Peek at the cover. Not 8GB." },
+      { plane: "json", who: "Worker → API", line: "PATCH /v1/assets/ast_uav1/technical", why: "detect: family=video. Or the worker writes Postgres directly — same fact." }
+    ]
   },
   {
     k: "Step 8 · Enrich · numbers from the header",
@@ -428,7 +475,11 @@ user_metadata unchanged
  tags={uav, khan-younis, gaza, vehicles}`,
     rd: `0`,
     s3: `small header range. not 8GB`,
-    os: `no index yet`
+    os: `no index yet`,
+    calls: [
+      { plane: "bytes", who: "Worker → S3", line: "GET  Range: moov / header", why: "ffprobe still does not download the hour." },
+      { plane: "json", who: "Worker → API", line: "PATCH /v1/assets/ast_uav1/technical", why: "Second page: duration_s=3600, h264, 1920x1080. User tags untouched." }
+    ]
   },
   {
     k: "Step 9 · Cover picture",
@@ -440,7 +491,10 @@ user_metadata unchanged
  key=derived/ast_uav1/poster.jpg`,
     rd: `0`,
     s3: `raw 8GB + poster 200KB`,
-    os: `no index`
+    os: `no index`,
+    calls: [
+      { plane: "bytes", who: "Worker → S3", line: "GET one frame  then  PUT derived/ast_uav1/poster.jpg", why: "Small JPEG beside the movie, not instead of it." }
+    ]
   },
   {
     k: "Step 10 · Table of contents",
@@ -453,7 +507,13 @@ user_metadata unchanged
     rd: `0`,
     s3: `8GB + 200KB`,
     os: `{ ast_uav1, Khan Younis vehicle movement,
-  video, uav, khan-younis, 3600s }`
+  video, uav, khan-younis, 3600s }`,
+    calls: [
+      { plane: "work", who: "Worker → OpenSearch", line: "PUT /assets/_doc/ast_uav1", why: "Search document. Rebuildable. Not the notebook." },
+      { plane: "json", who: "Client → API", line: "GET /v1/search?q=khan-younis", why: "What a person types in browse." },
+      { plane: "json", who: "API → Client", line: "200 hits + presigned GET", why: "Then the browser fetches the poster from S3, not through the API." },
+      { plane: "bytes", who: "Client → S3", line: "GET derived/ast_uav1/poster.jpg", why: "Preview bytes. The 8GB stays in the warehouse until someone downloads it." }
+    ]
   },
   {
     k: "Failures · what breaks and how we get up",
@@ -481,14 +541,39 @@ let tab = "flow";
 let mermaidDone = false;
 const $ = (id) => document.getElementById(id);
 
+function verbClass(plane) {
+  if (plane === "bytes") return "bytes";
+  if (plane === "work") return "work";
+  return "";
+}
+function renderCalls(calls) {
+  if (!calls || !calls.length) {
+    return `<div class="calls"><h2>On the wire</h2><p class="why">No HTTP yet. The file is still only on the laptop.</p></div>`;
+  }
+  return `<div class="calls"><h2>On the wire — what the browser / API / S3 actually send</h2>` +
+    calls.map((c) => {
+      const sp = c.line.indexOf(" ");
+      const verb = sp < 0 ? c.line : c.line.slice(0, sp);
+      const rest = sp < 0 ? "" : c.line.slice(sp + 1);
+      return `<div class="call"><div class="who">${c.who}</div><div><div class="line"><span class="verb ${verbClass(c.plane)}">${verb}</span> ${rest}</div><div class="why">${c.why}</div></div></div>`;
+    }).join("") +
+    `</div>`;
+}
 function renderFlow() {
   const s = STEPS[i];
   const hit = (n) => (s.hit || []).includes(n) ? " hit" : "";
   if (s.fail) {
-    $("tab-flow").innerHTML = `<div class="kicker">${s.k}</div><h1>${s.h}</h1><p class="kid">${s.kid}</p>${FAIL}`;
+    $("tab-flow").innerHTML = `<div class="kicker">${s.k}</div><h1>${s.h}</h1><p class="kid">${s.kid}</p>
+      <div class="calls"><h2>On the wire when something breaks</h2>
+        <div class="call"><div class="who">Client → S3</div><div><div class="line"><span class="verb bytes">PUT</span> same part again (backoff)</div><div class="why">Part 4 dropped. Do not restart 1–3.</div></div></div>
+        <div class="call"><div class="who">Client → API</div><div><div class="line"><span class="verb">GET</span> /v1/uploads/upl_99</div><div class="why">Tab reopened. Response lists completed parts; missing = retry list.</div></div></div>
+        <div class="call"><div class="who">Client → API</div><div><div class="line"><span class="verb">GET</span> /v1/uploads/upl_99/urls</div><div class="why">403 on S3 means the signed URL expired. New URLs, same parts.</div></div></div>
+        <div class="call"><div class="who">API → S3</div><div><div class="line"><span class="verb">AbortMultipartUpload</span></div><div class="why">Only if Complete checksums fail. Then POST /v1/uploads again with copied metadata.</div></div></div>
+      </div>${FAIL}`;
   } else {
     $("tab-flow").innerHTML = `<div class="kicker">${s.k} · khan-younis-uav.mp4 · 1h · 8GB · 32 parts · 3 in flight</div>
       <h1>${s.h}</h1><p class="kid">${s.kid}</p>
+      ${renderCalls(s.calls)}
       <div class="dbs">
         <div class="db pg${hit("pg")}"><h2>Postgres notebook — rows that stay</h2><pre>${s.pg}</pre></div>
         <div class="db rd${hit("rd")}"><h2>Redis sticky note — overwritten</h2><pre>${s.rd}</pre></div>
