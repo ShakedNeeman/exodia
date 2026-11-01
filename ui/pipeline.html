@@ -70,13 +70,6 @@
     th, td { text-align: left; border-bottom: 1px solid var(--line); padding: 7px 6px; vertical-align: top; }
     th { color: var(--faint); font-weight: 500; }
     .uml { background: #10141a; border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin-bottom: 16px; overflow-x: auto; }
-    .ui-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .fake { background: var(--elev); border: 1px solid var(--line); border-radius: 14px; padding: 14px; min-height: 220px; }
-    .fake h3 { margin: 0 0 8px; font-size: 14px; }
-    .qrow { display: flex; justify-content: space-between; gap: 8px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 13px; }
-    .pbar { height: 5px; background: #2a313b; border-radius: 99px; margin-top: 6px; overflow: hidden; }
-    .pbar i { display: block; height: 100%; background: var(--accent); }
-    .chip { display: inline-block; font-size: 11px; font-family: var(--mono); border: 1px solid var(--line); border-radius: 99px; padding: 2px 8px; }
     .note { color: var(--muted); font-size: 14px; max-width: 62em; }
     .calls { background: #10141a; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin: 0 0 12px; }
     .calls h2 { margin: 0 0 8px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); font-weight: 500; }
@@ -97,7 +90,6 @@
   <div class="tabs">
     <button type="button" class="on" id="t-flow">Pipeline</button>
     <button type="button" id="t-uml">UML</button>
-    <button type="button" id="t-ui">UI</button>
   </div>
   <main class="stage">
     <section id="tab-flow"></section>
@@ -238,43 +230,6 @@ stateDiagram-v2
   partial --> ready : re-run
   failed --> draft : retry
 </pre></div>
-    </section>
-    <section id="tab-ui" class="hidden">
-      <p class="note">What a person sees at those steps. Never a spinner with no number.</p>
-      <div class="ui-grid">
-        <div class="fake">
-          <h3>Ingest · after Start (step 1)</h3>
-          <div>Khan Younis vehicle movement</div>
-          <div class="chip">draft</div>
-          <div class="pbar"><i style="width:0"></i></div>
-          <div class="qrow"><span>0 / 32 slices</span><span>waiting on the warehouse</span></div>
-          <p class="note">The form is already saved. You can close the tab.</p>
-        </div>
-        <div class="fake">
-          <h3>Ingest · step 4</h3>
-          <div>Khan Younis vehicle movement</div>
-          <div class="chip">uploading</div>
-          <div class="pbar"><i style="width:9%"></i></div>
-          <div class="qrow"><span>3 / 32 landed</span><span>4,5,6 in flight · Pause</span></div>
-          <p class="note">9% is from the notebook. Not a guess.</p>
-        </div>
-        <div class="fake">
-          <h3>Ingest · after Complete (step 6)</h3>
-          <div>Khan Younis vehicle movement</div>
-          <div class="chip">checksum ok · uploaded</div>
-          <div class="pbar"><i style="width:100%;background:#3ddc97"></i></div>
-          <div class="qrow"><span>download works</span><span>enriching…</span></div>
-          <p class="note">The movie is alive. The cover is still coming.</p>
-        </div>
-        <div class="fake">
-          <h3>Browse · step 10</h3>
-          <div style="height:72px;border-radius:8px;background:linear-gradient(#151920,#0d1016);display:grid;place-items:center">▶ poster</div>
-          <div>Khan Younis vehicle movement</div>
-          <div class="chip">video</div> <div class="chip">uav</div> <div class="chip">khan-younis</div>
-          <div class="qrow"><span>1:00:00 · 8GB</span><span>ready</span></div>
-          <p class="note">Your tags on top. ffprobe below.</p>
-        </div>
-      </div>
     </section>
   </main>
   <footer class="foot" id="foot">
@@ -593,7 +548,7 @@ async function runMermaid() {
 
 function showTab(name) {
   tab = name;
-  ["flow","uml","ui"].forEach((n) => {
+  ["flow","uml"].forEach((n) => {
     $("tab-" + n).classList.toggle("hidden", n !== name);
     $("t-" + n).classList.toggle("on", n === name);
   });
@@ -603,7 +558,7 @@ function showTab(name) {
 
 $("prev").onclick = () => { i = Math.max(0, i - 1); renderFlow(); };
 $("next").onclick = () => { i = Math.min(STEPS.length - 1, i + 1); renderFlow(); };
-["flow","uml","ui"].forEach((n) => $("t-" + n).onclick = () => showTab(n));
+["flow","uml"].forEach((n) => $("t-" + n).onclick = () => showTab(n));
 document.addEventListener("keydown", (e) => {
   if (tab !== "flow") return;
   if (e.key === "ArrowRight") i = Math.min(STEPS.length - 1, i + 1);

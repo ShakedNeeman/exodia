@@ -10,7 +10,7 @@ UML lives in the repo, not only in HTML:
 
 - [`docs/uml.md`](docs/uml.md) — component, sequence (client, API, Postgres, Redis, S3, SQS, workers, OpenSearch), class, state
 - Interactive: [`ui/uml.html`](ui/uml.html)
-- Pipeline (records at each step, failures, UML + UI tabs): [`ui/pipeline.html`](ui/pipeline.html) · [`docs/pipeline.md`](docs/pipeline.md)
+- Pipeline (records, wire calls, failures) and UML: [`ui/pipeline.html`](ui/pipeline.html) · [`docs/pipeline.md`](docs/pipeline.md)
 
 ```bash
 open ui/pipeline.html
