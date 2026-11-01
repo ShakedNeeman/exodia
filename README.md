@@ -11,8 +11,10 @@ UML lives in the repo, not only in HTML:
 - English: [`docs/uml.md`](docs/uml.md)
 - Hebrew: [`docs/uml.he.md`](docs/uml.he.md)
 - Interactive EN / עב: [`ui/uml.html`](ui/uml.html)
+- Presentation slides: [`ui/present.html`](ui/present.html) · notes [`docs/present.md`](docs/present.md) / [`docs/present.he.md`](docs/present.he.md)
 
 ```bash
+open ui/present.html
 open ui/uml.html
 open ui/upload.html
 open ui/browse.html
@@ -342,6 +344,8 @@ docs/architecture.md      components, data placement, deployment
 docs/end-to-end.md        the four stages, APIs, sequence
 docs/decisions.md         ADRs and rejected alternatives
 docs/data-model.md        schema and metadata model
+docs/present.md           speaker notes — English
+docs/present.he.md        speaker notes — Hebrew
 docs/uml.md               high-level UML — English
 docs/uml.he.md            high-level UML — Hebrew
 docs/ui.md                upload + browse design

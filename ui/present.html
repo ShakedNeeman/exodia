@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aperture — Present</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Hebrew:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Syne:wght@700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0c0e12; --elev: #13171d; --line: #2a3340; --text: #eef2f6;
+      --muted: #8d98a6; --faint: #6b7582; --accent: #f0a14a;
+      --accent-dim: #3d2a14; --signal: #3ddc97; --signal-dim: #123528;
+      --blue: #7eb6ff; --blue-dim: #173047;
+      --sans: "IBM Plex Sans Hebrew", "IBM Plex Sans", sans-serif;
+      --display: "Syne", "IBM Plex Sans Hebrew", sans-serif;
+      --mono: "IBM Plex Mono", ui-monospace, monospace;
+    }
+    html[lang="en"] { direction: ltr; }
+    html[lang="en"] body { font-family: "IBM Plex Sans", sans-serif; }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); }
+    body { display: grid; grid-template-rows: 52px 1fr 72px; }
+    .top {
+      display: flex; align-items: center; gap: 14px; padding: 0 18px;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand { font-family: var(--display); font-weight: 700; }
+    .brand em { color: var(--accent); font-style: normal; }
+    .nav a { color: var(--muted); text-decoration: none; margin-inline-end: 12px; font-size: 14px; }
+    .nav a.on { color: var(--text); }
+    .lang { margin-inline-start: auto; display: flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; background: var(--elev); }
+    .lang button { border: 0; background: none; color: var(--muted); font: inherit; padding: 4px 11px; border-radius: 999px; cursor: pointer; }
+    .lang button.on { background: var(--accent-dim); color: var(--accent); }
+    .stage { padding: 36px 48px 16px; overflow: auto; }
+    .kicker { color: var(--accent); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; margin: 0 0 8px; }
+    h1 { font-family: var(--display); font-size: 40px; letter-spacing: -0.04em; line-height: 1.15; margin: 0 0 16px; }
+    h1.small { font-size: 30px; }
+    p { color: #d7dee6; font-size: 18px; max-width: 40em; margin: 0 0 12px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 920px; }
+    .grid4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
+    @media (max-width: 800px) { .grid2, .grid4 { grid-template-columns: 1fr; } .stage { padding: 20px; } h1 { font-size: 28px; } }
+    .card { background: var(--elev); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+    .card b { display: block; margin-bottom: 6px; }
+    .card span, .card p { color: var(--muted); font-size: 15px; margin: 0; }
+    .card.pg { border-color: #2a4d6d; }
+    .card.rd { border-color: #6a4a20; }
+    .mono { font-family: var(--mono); font-size: 13px; color: #f0c14a; direction: ltr; text-align: left; display: block; white-space: pre-wrap; }
+    table { width: 100%; max-width: 920px; border-collapse: collapse; font-size: 15px; }
+    th, td { text-align: start; border-bottom: 1px solid var(--line); padding: 8px 6px; vertical-align: top; }
+    th { color: var(--faint); font-weight: 500; }
+    .say {
+      margin-top: 18px; padding: 10px 14px; border-radius: 10px;
+      background: var(--accent-dim); border: 1px solid #6a4a20; color: #f3d2a8; font-size: 15px;
+    }
+    .say strong { color: var(--accent); }
+    .foot {
+      border-top: 1px solid var(--line); display: flex; align-items: center; gap: 10px;
+      padding: 0 18px; background: #0e1217;
+    }
+    .foot button {
+      background: #1a2028; border: 1px solid var(--line); color: var(--text);
+      border-radius: 10px; padding: 8px 14px; cursor: pointer; font: inherit;
+    }
+    .foot button.primary { background: var(--accent); color: #1a1208; border-color: #d48a30; font-weight: 600; }
+    .bar { flex: 1; height: 5px; background: #2a313b; border-radius: 99px; overflow: hidden; }
+    .bar i { display: block; height: 100%; background: var(--accent); width: 0; }
+    .count { font-family: var(--mono); font-size: 12px; color: var(--faint); min-width: 48px; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="brand">ape<em>rture</em></div>
+    <nav class="nav">
+      <a href="index.html" data-i="navHome">בית</a>
+      <a class="on" href="present.html" data-i="navPresent">הצגה</a>
+      <a href="uml.html" data-i="navUml">UML</a>
+      <a href="upload.html" data-i="navUpload">העלאה</a>
+      <a href="browse.html" data-i="navBrowse">גלישה</a>
+    </nav>
+    <div class="lang">
+      <button type="button" id="btn-en">EN</button>
+      <button type="button" id="btn-he" class="on">עב</button>
+    </div>
+  </header>
+
+  <main class="stage" id="stage"></main>
+
+  <footer class="foot">
+    <button type="button" id="prev" data-i="prev">הקודם</button>
+    <button type="button" class="primary" id="next" data-i="next">הבא</button>
+    <div class="bar"><i id="bar"></i></div>
+    <span class="count" id="count">1 / 9</span>
+  </footer>
+
+<script>
+const T = {
+  he: {
+    navHome: "בית", navPresent: "הצגה", navUml: "UML", navUpload: "העלאה", navBrowse: "גלישה",
+    prev: "הקודם", next: "הבא",
+    say: "מה להגיד",
+    slides: [
+      {
+        k: "שקף 1 · פתיחה",
+        h: "קטלוג מול מחסן. לא דרייב.",
+        html: `<p>עשרות טרה של קבצים מעורבים — מסמכים, תמונות, וידאו, רדאר. צריך להעלות אמין, לצרף מטא-דאטה, להעשיר לבד, ולמצוא בצורה לוגית.</p>
+        <p>הבייטים חיים ב-S3. המשמעות חיה ב-Postgres. אם מערבבים — זה לא מחזיק.</p>`,
+        say: "הבעיה היא לא אחסון. כבר יש להם טרות. הבעיה היא להכניס קבצים גדולים ומגוונים, ואז למצוא אותם."
+      },
+      {
+        k: "שקף 2 · ארבע דרישות",
+        h: "מה המטלה ביקשה",
+        html: `<div class="grid4">
+          <div class="card"><b>העלאה אמינה</b><span>גם טרה, גם רשת שנופלת</span></div>
+          <div class="card"><b>מטא-דאטה בהעלאה</b><span>המשתמש ממלא לפני הבייטים</span></div>
+          <div class="card"><b>העשרה איפה שאפשר</b><span>המערכת משלימה לבד</span></div>
+          <div class="card"><b>גלישה לוגית</b><span>אוספים ופילטרים, לא תיקיות</span></div>
+        </div>`,
+        say: "ארבע דרישות. כל בחירה בפרויקט באה מאחת מהן. לא אספתי סטאק."
+      },
+      {
+        k: "שקף 3 · שני מישורים",
+        h: "שני כבישים. אף פעם לא אותו תהליך.",
+        html: `<div class="grid2">
+          <div class="card rd"><b>מישור בקרה · כתום</b><span>דפדפן ↔ API. JSON קטן: שם, תגיות, סשן, חיפוש. Spring + Postgres.</span></div>
+          <div class="card" style="border-color:#1f5a40"><b>מישור בייטים · ירוק</b><span>דפדפן ↔ S3. החלקים עצמם. ה-API לא רואה אותם. הוא רק חותם URL.</span></div>
+        </div>
+        <p style="margin-top:16px">S3 שומר חלקים ומדביק ב-Complete. אנחנו מנהלים את הסשן. S3 לא מריץ טרנזקציית SQL ולא מנהל וידאו.</p>`,
+        say: "חתמתי URL. לא העברתי קובץ. ברגע שמכניסים טרה דרך השרת, מישור הבקרה נהיה צינור."
+      },
+      {
+        k: "שקף 4 · ארבעה שלבים",
+        h: "לקוח, שרת, אחסון, עיבוד — בכל שלב",
+        html: `<table>
+          <tr><th></th><th>לקוח</th><th>שרת</th><th>S3</th><th>עיבוד</th></tr>
+          <tr><td><b>1 כוונה</b></td><td>שולח מטא-דאטה</td><td>יוצר draft + סשן</td><td>פותח multipart</td><td>אין</td></tr>
+          <tr><td><b>2 העברה</b></td><td>PUT חלקים ישר ל-S3</td><td>רושם חלק שהסתיים</td><td>שומר חלקים</td><td>אין</td></tr>
+          <tr><td><b>3 חותמת</b></td><td>complete</td><td>בודק checksum</td><td>מדביק לאובייקט</td><td>אין עדיין</td></tr>
+          <tr><td><b>4 העשרה</b></td><td>רואה / מחפש</td><td>מעדכן קטלוג</td><td>קריאה + נגזרת</td><td>detect → extract</td></tr>
+        </table>`,
+        say: "הקובץ שימושי מ-uploaded. העשרה רצה מאחור. אם parser נכשל — הקובץ לא נעלם."
+      },
+      {
+        k: "שקף 5 · Postgres מול Redis",
+        h: "מחברת מול מד מהירות",
+        html: `<div class="grid2">
+          <div class="card pg"><b>Postgres · המחברת</b>
+            <p>טבלאות. שורות. אי אפשר לאבד. מי הקובץ, מצב, אילו חלקים נחתו, תגיות, הרשאות.</p>
+            <p style="margin-top:8px">אין קי-וואליו. יש מפתח ראשי + עמודות.</p>
+          </div>
+          <div class="card rd"><b>Redis · מד המהירות</b>
+            <p>קי → ערך בזיכרון. דורסים כל שנייה. 62%, 187MB/s.</p>
+            <p style="margin-top:8px">אם מוחקים — אף קובץ לא נעלם.</p>
+          </div>
+        </div>`,
+        say: "Redis נשאל 'מה האחוז עכשיו?'. Postgres נשאל 'אילו חלקים חסרים?'. לא הפוך."
+      },
+      {
+        k: "שקף 6 · אותו רגע, שתי כתיבות",
+        h: "חלק 3812 נחת",
+        html: `<div class="grid2">
+          <div class="card pg"><b>Postgres · שורה חדשה</b>
+            <span class="mono">upload_part
+session_id   upl_44c
+part_number  3812
+etag         "c90e…"
+checksum     crc64:71ab…</span>
+            <p style="margin-top:8px">עובדה. בשביל resume מחר בבוקר.</p>
+          </div>
+          <div class="card rd"><b>Redis · דריסת מפתח</b>
+            <span class="mono">progress:upl_44c
+{
+  "pct": 62,
+  "mbps": 187,
+  "part": 3812
+}</span>
+            <p style="margin-top:8px">תצוגה. TTL. אפשר לבנות מחדש מהמחברת.</p>
+          </div>
+        </div>`,
+        say: "שתי כתיבות, שני תפקידים. Postgres זוכר. Redis מציג."
+      },
+      {
+        k: "שקף 7 · אם אחד נופל",
+        h: "רק המחברת היא קריטית",
+        html: `<table>
+          <tr><th>מה נשבר</th><th>מה קורה</th></tr>
+          <tr><td>Redis נמחק</td><td>הבר במסך נעלם לרגע. ממשיכים מהחלקים ב-Postgres. אף בייט לא עולה שוב</td></tr>
+          <tr><td>חלק אחד נכשל</td><td>רק הוא חוזר. לא כל ה-1.5TB</td></tr>
+          <tr><td>Worker נפל</td><td>הקובץ כבר uploaded. ההודעה חוזרת לתור</td></tr>
+          <tr><td>Postgres נמחק</td><td>אין קטלוג, אין resume. זו הקטסטרופה — לכן גיבויים</td></tr>
+        </table>`,
+        say: "אמין = חלק שנפל לא מפיל קובץ, וטאב שנסגר לא מתחיל לילה מחדש."
+      },
+      {
+        k: "שקף 8 · הכלים",
+        h: "כל בחירה פותרת דרישה",
+        html: `<table>
+          <tr><th>שכבה</th><th>בחירה</th><th>למה</th></tr>
+          <tr><td>בייטים</td><td>Amazon S3</td><td>multipart, checksums, 50TB</td></tr>
+          <tr><td>אמת</td><td>PostgreSQL</td><td>יחסים + מכונת מצבים</td></tr>
+          <tr><td>תצוגה חיה</td><td>Redis</td><td>אחוזים. לא יומן</td></tr>
+          <tr><td>API</td><td>Spring Boot</td><td>קטלוג, לא צינור</td></tr>
+          <tr><td>עובדים</td><td>Python</td><td>הפורמטים חיים שם</td></tr>
+          <tr><td>חיפוש</td><td>OpenSearch</td><td>פילטרים. אפשר לבנות מחדש</td></tr>
+        </table>`,
+        say: "S3 הוא המחסן. Postgres המחברת. Redis המד. OpenSearch האינדקס בסוף הספר."
+      },
+      {
+        k: "שקף 9 · סיום",
+        h: "שלושה דברים שלא אהפוך",
+        html: `<div class="grid2">
+          <div class="card"><b>בייטים לא ב-API</b><span>presigned multipart ל-S3</span></div>
+          <div class="card"><b>מטא-דאטה ממדרגה ראשונה</b><span>נשמר ב-draft, לפני הבייטים</span></div>
+          <div class="card"><b>unknown הוא טיפוס</b><span>parser שנכשל לא מחביא קובץ</span></div>
+          <div class="card"><b>גלישה היא קטלוג</b><span>אוספים + פילטרים, לא /mnt/storage3</span></div>
+        </div>`,
+        say: "אחרי זה פותחים את מסך ההעלאה ואת מסך הגלישה. אם שואלים לעומק — עוברים ל-UML."
+      }
+    ]
+  },
+  en: {
+    navHome: "Home", navPresent: "Present", navUml: "UML", navUpload: "Ingest", navBrowse: "Browse",
+    prev: "Previous", next: "Next",
+    say: "Say this",
+    slides: [
+      {
+        k: "Slide 1 · Open",
+        h: "A catalog in front of a store. Not a drive.",
+        html: `<p>Tens of terabytes of mixed files — docs, images, video, radar. Uploads must be reliable, metadata attached at ingest, technical enrichment automatic, browse logical.</p>
+        <p>Bytes live in S3. Meaning lives in Postgres. Mix those two and it does not scale.</p>`,
+        say: "Storage is not the problem. They already have terabytes. The problem is getting diverse files in, then finding them."
+      },
+      {
+        k: "Slide 2 · Four requirements",
+        h: "What the brief asked",
+        html: `<div class="grid4">
+          <div class="card"><b>Reliable ingest</b><span>Terabytes, flaky networks</span></div>
+          <div class="card"><b>Metadata at upload</b><span>User fills this before bytes move</span></div>
+          <div class="card"><b>Enrich where possible</b><span>The system fills technical fields</span></div>
+          <div class="card"><b>Logical browse</b><span>Collections and facets, not folders</span></div>
+        </div>`,
+        say: "Four requirements. Every choice maps to one of them. I did not collect a stack."
+      },
+      {
+        k: "Slide 3 · Two planes",
+        h: "Two roads. Never the same process.",
+        html: `<div class="grid2">
+          <div class="card rd"><b>Control plane · amber</b><span>Browser ↔ API. Small JSON: name, tags, session, search. Spring + Postgres.</span></div>
+          <div class="card" style="border-color:#1f5a40"><b>Data plane · green</b><span>Browser ↔ S3. The parts themselves. The API never sees them. It only signs a URL.</span></div>
+        </div>
+        <p style="margin-top:16px">S3 stores parts and concatenates on Complete. We drive the session. S3 does not run SQL transactions and does not manage video.</p>`,
+        say: "I signed a URL. I did not stream a file. Put a terabyte through the API and the control plane becomes a pipe."
+      },
+      {
+        k: "Slide 4 · Four stages",
+        h: "Client, server, storage, processing — at every stage",
+        html: `<table>
+          <tr><th></th><th>Client</th><th>Server</th><th>S3</th><th>Processing</th></tr>
+          <tr><td><b>1 Intent</b></td><td>Sends metadata</td><td>Creates draft + session</td><td>Opens multipart</td><td>Idle</td></tr>
+          <tr><td><b>2 Transfer</b></td><td>PUT parts straight to S3</td><td>Records finished parts</td><td>Holds parts</td><td>Idle</td></tr>
+          <tr><td><b>3 Seal</b></td><td>complete</td><td>Checks checksums</td><td>Assembles object</td><td>Not yet</td></tr>
+          <tr><td><b>4 Enrich</b></td><td>Browse / search</td><td>Updates catalog</td><td>Read + derivative</td><td>detect → extract</td></tr>
+        </table>`,
+        say: "The file is usable from uploaded. Enrichment runs behind. A failed parser does not hide the file."
+      },
+      {
+        k: "Slide 5 · Postgres vs Redis",
+        h: "Notebook vs speedometer",
+        html: `<div class="grid2">
+          <div class="card pg"><b>Postgres · the notebook</b>
+            <p>Tables. Rows. Must not lose. Which file, which state, which parts landed, tags, ACLs.</p>
+            <p style="margin-top:8px">Not a key-value store. A primary key plus columns.</p>
+          </div>
+          <div class="card rd"><b>Redis · the speedometer</b>
+            <p>Key → value in memory. Overwritten every second. 62%, 187MB/s.</p>
+            <p style="margin-top:8px">Flush it and no file is lost.</p>
+          </div>
+        </div>`,
+        say: "Ask Redis 'what is the percent?'. Ask Postgres 'which parts are missing?'. Never the other way around."
+      },
+      {
+        k: "Slide 6 · Same moment, two writes",
+        h: "Part 3812 just landed",
+        html: `<div class="grid2">
+          <div class="card pg"><b>Postgres · a new row</b>
+            <span class="mono">upload_part
+session_id   upl_44c
+part_number  3812
+etag         "c90e…"
+checksum     crc64:71ab…</span>
+            <p style="margin-top:8px">A fact. So we can resume tomorrow morning.</p>
+          </div>
+          <div class="card rd"><b>Redis · overwrite a key</b>
+            <span class="mono">progress:upl_44c
+{
+  "pct": 62,
+  "mbps": 187,
+  "part": 3812
+}</span>
+            <p style="margin-top:8px">A display. TTL. Rebuildable from the notebook.</p>
+          </div>
+        </div>`,
+        say: "Two writes, two jobs. Postgres remembers. Redis shows."
+      },
+      {
+        k: "Slide 7 · If one dies",
+        h: "Only the notebook is critical",
+        html: `<table>
+          <tr><th>What breaks</th><th>What happens</th></tr>
+          <tr><td>Redis flushed</td><td>The bar vanishes for a moment. Resume from Postgres parts. No byte is re-sent</td></tr>
+          <tr><td>One part fails</td><td>Only that part retries. Not the whole 1.5TB</td></tr>
+          <tr><td>Worker dies</td><td>The file is already uploaded. The queue message comes back</td></tr>
+          <tr><td>Postgres lost</td><td>No catalog, no resume. That is the disaster — hence backups</td></tr>
+        </table>`,
+        say: "Reliable means a dropped part does not drop the file, and a closed tab does not restart the night."
+      },
+      {
+        k: "Slide 8 · Tools",
+        h: "Every choice solves a requirement",
+        html: `<table>
+          <tr><th>Layer</th><th>Choice</th><th>Why</th></tr>
+          <tr><td>Bytes</td><td>Amazon S3</td><td>multipart, checksums, 50TB</td></tr>
+          <tr><td>Truth</td><td>PostgreSQL</td><td>Relations + a real state machine</td></tr>
+          <tr><td>Live view</td><td>Redis</td><td>Percents. Not the ledger</td></tr>
+          <tr><td>API</td><td>Spring Boot</td><td>A catalog, not a pipe</td></tr>
+          <tr><td>Workers</td><td>Python</td><td>The format ecosystem lives there</td></tr>
+          <tr><td>Search</td><td>OpenSearch</td><td>Facets. Rebuildable</td></tr>
+        </table>`,
+        say: "S3 is the warehouse. Postgres the notebook. Redis the gauge. OpenSearch the index at the back of the book."
+      },
+      {
+        k: "Slide 9 · Close",
+        h: "Three things I would not reverse",
+        html: `<div class="grid2">
+          <div class="card"><b>Bytes stay out of the API</b><span>presigned multipart to S3</span></div>
+          <div class="card"><b>Metadata is first-class</b><span>Committed in draft, before bytes</span></div>
+          <div class="card"><b>Unknown is a type</b><span>A failed parser does not hide the file</span></div>
+          <div class="card"><b>Browse is a catalog</b><span>Collections + facets, not /mnt/storage3</span></div>
+        </div>`,
+        say: "Then open the ingest screen and the browse screen. If they go deep, switch to the UML page."
+      }
+    ]
+  }
+};
+
+let lang = "he";
+let i = 0;
+
+function slides() { return T[lang].slides; }
+
+function render() {
+  const s = slides()[i];
+  const say = T[lang].say;
+  document.getElementById("stage").innerHTML =
+    `<div class="kicker">${s.k}</div><h1 class="${s.h.length > 42 ? "small" : ""}">${s.h}</h1>${s.html}<div class="say"><strong>${say}:</strong> ${s.say}</div>`;
+  document.getElementById("count").textContent = (i + 1) + " / " + slides().length;
+  document.getElementById("bar").style.width = ((i + 1) / slides().length * 100) + "%";
+  document.querySelectorAll("[data-i]").forEach((el) => {
+    const k = el.getAttribute("data-i");
+    if (T[lang][k]) el.textContent = T[lang][k];
+  });
+  document.getElementById("btn-en").classList.toggle("on", lang === "en");
+  document.getElementById("btn-he").classList.toggle("on", lang === "he");
+}
+
+function applyLang(next) {
+  lang = next;
+  document.documentElement.lang = next;
+  document.documentElement.dir = next === "he" ? "rtl" : "ltr";
+  render();
+}
+
+document.getElementById("prev").onclick = () => { i = Math.max(0, i - 1); render(); };
+document.getElementById("next").onclick = () => { i = Math.min(slides().length - 1, i + 1); render(); };
+document.getElementById("btn-en").onclick = () => applyLang("en");
+document.getElementById("btn-he").onclick = () => applyLang("he");
+document.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+    const forward = document.documentElement.dir === "rtl" ? e.key === "ArrowLeft" : e.key === "ArrowRight";
+    if (forward) i = Math.min(slides().length - 1, i + 1);
+    else i = Math.max(0, i - 1);
+    render();
+  }
+});
+applyLang("he");
+</script>
+</body>
+</html>
