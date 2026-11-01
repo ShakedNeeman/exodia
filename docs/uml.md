@@ -124,53 +124,52 @@ S3 stores parts and concatenates them on Complete. The client and API drive the 
 
 ```mermaid
 classDiagram
-  direction LR
-  class Collection {
-    id
-    name
-    acl
-  }
-  class Asset {
-    id
-    title
-    state
-    family
-    size_bytes
-  }
-  class AssetObject {
-    role
-    storage_key
-    checksum
-  }
-  class UploadSession {
-    multipart_upload_id
-    part_size
-    part_count
-  }
-  class UserMetadata {
-    tags
-    fields
-    source_path
-  }
-  class TechnicalMetadata {
-    extractor
-    schema_ver
-    data
-  }
-  class DerivedArtifact {
-    kind
-    storage_key
-  }
-  class EnrichmentJob {
-    job_state
-  }
-  Collection --> Asset : one-to-many
-  Asset --> AssetObject : one-to-many
-  Asset --> UserMetadata : one-to-one
-  Asset --> TechnicalMetadata : one-to-many
-  Asset --> DerivedArtifact : one-to-many
-  Asset --> EnrichmentJob : one-to-many
-  Asset --> UploadSession : one-to-one
+    class Collection{
+        +id
+        +name
+        +acl
+    }
+    class Asset{
+        +id
+        +title
+        +lifecycle
+        +family
+        +size_bytes
+    }
+    class AssetObject{
+        +role
+        +storage_key
+        +checksum
+    }
+    class UploadSession{
+        +multipart_upload_id
+        +part_size
+        +part_count
+    }
+    class UserMetadata{
+        +tags
+        +fields
+        +source_path
+    }
+    class TechnicalMetadata{
+        +extractor
+        +schema_ver
+        +data
+    }
+    class DerivedArtifact{
+        +kind
+        +storage_key
+    }
+    class EnrichmentJob{
+        +job_state
+    }
+    Collection --> Asset
+    Asset --> AssetObject
+    Asset --> UserMetadata
+    Asset --> TechnicalMetadata
+    Asset --> DerivedArtifact
+    Asset --> EnrichmentJob
+    Asset --> UploadSession
 ```
 
 - **Asset** is logical — what people browse.
@@ -184,16 +183,16 @@ classDiagram
 
 ```mermaid
 stateDiagram-v2
-  [*] --> draft
-  draft --> uploading : first part lands
-  uploading --> uploaded : Complete
-  uploading --> failed : abort
-  draft --> failed : session abort
-  uploaded --> enriching : worker starts
-  enriching --> ready : extractors finished
-  enriching --> partial : type unknown
-  partial --> ready : re-run
-  failed --> draft : retry
+    [*] --> Draft
+    Draft --> Uploading : first_part
+    Uploading --> Uploaded : complete
+    Uploading --> Failed : abort
+    Draft --> Failed : abort
+    Uploaded --> Enriching : worker
+    Enriching --> Ready : ok
+    Enriching --> Partial : unknown
+    Partial --> Ready : rerun
+    Failed --> Draft : retry
 ```
 
 Download is allowed from `uploaded` onward. Enrichment never hides the file. `failed` is integrity / session only.

@@ -171,65 +171,64 @@ sequenceDiagram
   Client->>S3: GET derived
 </pre></div>
       <h1>Class</h1>
-      <div class="uml"><pre class="mermaid">
+      <div class="uml"><div class="mermaid">
 classDiagram
-  direction LR
-  class Collection {
-    id
-    name
-    acl
-  }
-  class Asset {
-    id
-    title
-    state
-    family
-    size_bytes
-  }
-  class AssetObject {
-    role
-    storage_key
-    checksum
-  }
-  class UploadSession {
-    multipart_upload_id
-    part_size
-    part_count
-  }
-  class UserMetadata {
-    tags
-    fields
-  }
-  class TechnicalMetadata {
-    extractor
-    schema_ver
-    data
-  }
-  class DerivedArtifact {
-    kind
-    storage_key
-  }
-  Collection --> Asset : one-to-many
-  Asset --> AssetObject : one-to-many
-  Asset --> UserMetadata : one-to-one
-  Asset --> TechnicalMetadata : one-to-many
-  Asset --> DerivedArtifact : one-to-many
-  Asset --> UploadSession : one-to-one
-</pre></div>
+    class Collection{
+        +id
+        +name
+        +acl
+    }
+    class Asset{
+        +id
+        +title
+        +lifecycle
+        +family
+        +size_bytes
+    }
+    class AssetObject{
+        +role
+        +storage_key
+        +checksum
+    }
+    class UploadSession{
+        +multipart_upload_id
+        +part_size
+        +part_count
+    }
+    class UserMetadata{
+        +tags
+        +fields
+    }
+    class TechnicalMetadata{
+        +extractor
+        +schema_ver
+        +data
+    }
+    class DerivedArtifact{
+        +kind
+        +storage_key
+    }
+    Collection --> Asset
+    Asset --> AssetObject
+    Asset --> UserMetadata
+    Asset --> TechnicalMetadata
+    Asset --> DerivedArtifact
+    Asset --> UploadSession
+      </div></div>
       <h1>State</h1>
-      <div class="uml"><pre class="mermaid">
+      <div class="uml"><div class="mermaid">
 stateDiagram-v2
-  [*] --> draft
-  draft --> uploading : first part lands
-  uploading --> uploaded : Complete
-  uploading --> failed : abort
-  draft --> failed : session abort
-  uploaded --> enriching : worker starts
-  enriching --> ready : extractors ok
-  enriching --> partial : type unknown
-  partial --> ready : re-run
-  failed --> draft : retry
-</pre></div>
+    [*] --> Draft
+    Draft --> Uploading : first_part
+    Uploading --> Uploaded : complete
+    Uploading --> Failed : abort
+    Draft --> Failed : abort
+    Uploaded --> Enriching : worker
+    Enriching --> Ready : ok
+    Enriching --> Partial : unknown
+    Partial --> Ready : rerun
+    Failed --> Draft : retry
+      </div></div>
     </section>
   </main>
   <footer class="foot" id="foot">
@@ -493,7 +492,6 @@ const FAIL = `<table>
 
 let i = 0;
 let tab = "flow";
-let mermaidDone = false;
 const $ = (id) => document.getElementById(id);
 
 function verbClass(plane) {
@@ -541,9 +539,10 @@ function renderFlow() {
 }
 
 async function runMermaid() {
-  if (mermaidDone || !window.__mermaid) return;
-  mermaidDone = true;
-  await window.__mermaid.run({ querySelector: "#tab-uml .mermaid" });
+  if (!window.__mermaid) return;
+  const nodes = [...document.querySelectorAll("#tab-uml .mermaid")].filter((n) => !n.getAttribute("data-processed"));
+  if (!nodes.length) return;
+  await window.__mermaid.run({ nodes });
 }
 
 function showTab(name) {
@@ -553,7 +552,7 @@ function showTab(name) {
     $("t-" + n).classList.toggle("on", n === name);
   });
   $("foot").style.display = name === "flow" ? "flex" : "none";
-  if (name === "uml") runMermaid();
+  if (name === "uml") requestAnimationFrame(() => runMermaid());
 }
 
 $("prev").onclick = () => { i = Math.max(0, i - 1); renderFlow(); };
@@ -568,7 +567,6 @@ document.addEventListener("keydown", (e) => {
 });
 renderFlow();
 showTab("flow");
-setTimeout(runMermaid, 800);
 </script>
 </body>
 </html>
