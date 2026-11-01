@@ -77,6 +77,7 @@ sequenceDiagram
   Client->>API: POST /uploads + user metadata
   API->>PG: INSERT asset draft, object, user_metadata, session
   API->>S3: CreateMultipartUpload
+  Note right of S3: S3 is not told how many parts
   S3-->>API: uploadId
   API->>Redis: SET progress:session pct=0
   API-->>Client: session + presigned part URLs

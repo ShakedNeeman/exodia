@@ -1,6 +1,6 @@
 # Architecture
 
-Aperture is a catalog in front of an object store. The catalog answers “what is this and who can see it”. The object store answers “give me the bytes”.
+Sentinel is a catalog in front of an object store. The catalog answers “what is this and who can see it”. The object store answers “give me the bytes”.
 
 Nothing in the design assumes the files are small, uniform, or already labeled.
 

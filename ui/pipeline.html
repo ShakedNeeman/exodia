@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Aperture — Pipeline</title>
+  <title>Sentinel — Pipeline</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Syne:wght@700&display=swap" rel="stylesheet" />
@@ -82,7 +82,7 @@
 </head>
 <body>
   <header class="top">
-    <div class="brand">ape<em>rture</em></div>
+    <div class="brand">sen<em>tinel</em></div>
   </header>
   <div class="tabs">
     <button type="button" class="on" id="t-flow">Pipeline</button>
@@ -204,23 +204,23 @@ stateDiagram-v2
       <div class="ui-grid">
         <div class="fake">
           <h3>Ingest · after Start (step 1)</h3>
-          <div>Hangar approach</div>
+          <div>Khan Younis vehicle movement</div>
           <div class="chip">draft</div>
           <div class="pbar"><i style="width:0"></i></div>
-          <div class="qrow"><span>0 / 8 slices</span><span>waiting on the warehouse</span></div>
+          <div class="qrow"><span>0 / 32 slices</span><span>waiting on the warehouse</span></div>
           <p class="note">The form is already saved. You can close the tab.</p>
         </div>
         <div class="fake">
           <h3>Ingest · step 4</h3>
-          <div>Hangar approach</div>
+          <div>Khan Younis vehicle movement</div>
           <div class="chip">uploading</div>
-          <div class="pbar"><i style="width:38%"></i></div>
-          <div class="qrow"><span>3 / 8 landed</span><span>4,5,6 in flight · Pause</span></div>
-          <p class="note">38% is from the notebook. Not a guess.</p>
+          <div class="pbar"><i style="width:9%"></i></div>
+          <div class="qrow"><span>3 / 32 landed</span><span>4,5,6 in flight · Pause</span></div>
+          <p class="note">9% is from the notebook. Not a guess.</p>
         </div>
         <div class="fake">
           <h3>Ingest · after Complete (step 6)</h3>
-          <div>Hangar approach</div>
+          <div>Khan Younis vehicle movement</div>
           <div class="chip">checksum ok · uploaded</div>
           <div class="pbar"><i style="width:100%;background:#3ddc97"></i></div>
           <div class="qrow"><span>download works</span><span>enriching…</span></div>
@@ -229,9 +229,9 @@ stateDiagram-v2
         <div class="fake">
           <h3>Browse · step 10</h3>
           <div style="height:72px;border-radius:8px;background:linear-gradient(#151920,#0d1016);display:grid;place-items:center">▶ poster</div>
-          <div>Hangar approach</div>
-          <div class="chip">video</div> <div class="chip">orbit-12</div>
-          <div class="qrow"><span>18:22 · 2GB</span><span>ready</span></div>
+          <div>Khan Younis vehicle movement</div>
+          <div class="chip">video</div> <div class="chip">uav</div> <div class="chip">khan-younis</div>
+          <div class="qrow"><span>1:00:00 · 8GB</span><span>ready</span></div>
           <p class="note">Your tags on top. ffprobe below.</p>
         </div>
       </div>
@@ -247,8 +247,8 @@ stateDiagram-v2
 const STEPS = [
   {
     k: "Step 0",
-    h: "The video is on the laptop. We have not pressed anything.",
-    kid: "Three places: a notebook (Postgres) that keeps rows, a fridge note (Redis) we erase and rewrite, a warehouse (S3) for the actual movie. Right now none of them know this file.",
+    h: "A one-hour UAV pass is on the laptop. We have not pressed anything.",
+    kid: "Three places: a notebook (Postgres) that keeps rows, a fridge note (Redis) we erase and rewrite, a warehouse (S3) for the actual movie. Right now none of them know this Khan Younis pass.",
     hit: [],
     pg: `asset            (empty)
 asset_object     (empty)
@@ -257,118 +257,125 @@ upload_session   (empty)
 upload_part      0 rows
 
 collection already exists:
- id=col_hangar  name="Hangar media"`,
+ id=col_gaza  name="Gaza UAV"`,
     rd: `(no keys)`,
-    s3: `bucket exists
-no hangar.mp4`,
+    s3: `bucket sentinel-raw exists
+no khan-younis-uav.mp4`,
     os: `queue empty
 search empty`
   },
   {
     k: "Step 1 · Start",
     h: "We write in the notebook who this video is. We still do not send it.",
-    kid: "Like writing 'Hangar video, 2GB, tag orbit-12' before the truck leaves. The movie is still at home.",
+    kid: "Like writing 'Khan Younis, 1 hour, 8GB, tags uav + vehicles' before the truck leaves. S3 is only asked to open a box. Nobody tells S3 'there will be 32 slices' yet. That number lives in our notebook.",
     hit: ["pg","rd","s3"],
     pg: `asset
- id=ast_vid1  title="Hangar approach"
- state=draft  size_bytes=2147483648
+ id=ast_uav1  title="Khan Younis vehicle movement"
+ state=draft  size_bytes=8589934592
 
 asset_object
- filename="hangar.mp4"
- storage_key="raw/2026/11/ast_vid1/hangar.mp4"
+ filename="khan-younis-uav.mp4"
+ storage_key="raw/2026/11/ast_uav1/khan-younis-uav.mp4"
 
 user_metadata
- tags={orbit-12, hangar}
- fields={"camera":"A7S"}
+ tags={uav, khan-younis, gaza, vehicles}
+ fields={"platform":"quadcopter","task":"vehicle-motion"}
 
 upload_session
  id=upl_99  mpu_id=mpu_X
- part_count=8  state=open
+ part_size=268435456
+ part_count=32  state=open
 
 upload_part  0 rows`,
     rd: `KEY   progress:upl_99
-VALUE { "pct": 0, "done": 0, "of": 8 }
+VALUE { "pct": 0, "done": 0, "of": 32 }
 
-1 note. Not 8.`,
+1 note. Not 32.`,
     s3: `CreateMultipartUpload
 uploadId=mpu_X
 parts stored: 0
+S3 does NOT know part_count
 GET file: missing`,
     os: `no message
 no search doc`
   },
   {
     k: "Step 2 · Three slices in the air",
-    h: "Cut the video into 8 slices. Send 3 at a time, straight to the warehouse.",
-    kid: "The movie is a cake. Eight slices. Three ride the truck together. Notebook and fridge note wait until the warehouse says 'got it'.",
+    h: "Cut the hour into 32 slices of 256MB. Send 3 at a time, straight to the warehouse.",
+    kid: "The movie is a cake. Thirty-two slices. Three ride the truck together. Notebook and fridge note wait until the warehouse says 'got it'.",
     hit: ["s3"],
     pg: `Unchanged.
-upload_part still 0.`,
+upload_part still 0.
+part_count=32 is only in our session row.`,
     rd: `same note  pct: 0`,
     s3: `PUT part 1, 2, 3 in flight
-nothing on the shelf yet`,
+S3 sees part numbers, not a total
+nothing glued yet`,
     os: `empty`
   },
   {
     k: "Step 3 · Slice 2 arrives first",
     h: "Order does not matter. Notebook adds a row. Fridge note is rewritten.",
-    kid: "Slice 2 landed before slice 1. Fine. Write 'slice 2 is here'. Erase 0% on the fridge, write 13%. Do not add a second note.",
+    kid: "Slice 2 landed before slice 1. Fine. Write 'slice 2 is here'. Erase 0% on the fridge, write 3% (1 of 32). Do not add a second note.",
     hit: ["pg","rd","s3"],
     pg: `upload_part  1 row
  session_id | part | etag
  upl_99     | 2    | "e2"
 
-asset.state = uploading`,
+asset.state = uploading
+missing = 1,3,4,…,32`,
     rd: `same KEY, new VALUE
-{ "pct": 13, "done": 1, "last": 2 }
+{ "pct": 3, "done": 1, "of": 32, "last": 2 }
 still 1 note`,
     s3: `stored: part 2
-in flight: 1, 3`,
+in flight: 1, 3
+S3 still has no total`,
     os: `empty`
   },
   {
     k: "Step 4 · 1 and 3 land. Send 4,5,6",
     h: "At most 3 in the air. Notebook grows. Redis stays one key.",
-    kid: "Three slices in the notebook. Send three more. Never eight planes at once — they bump into each other.",
+    kid: "Three slices in the notebook. Send three more. Never 32 planes at once — they bump into each other.",
     hit: ["pg","rd","s3"],
     pg: `upload_part  3 rows
- 1 "e1"  2 "e2"  3 "e3"`,
-    rd: `{ "pct": 38, "done": 3, "of": 8 }`,
+ 1 "e1"  2 "e2"  3 "e3"
+missing = 4…32`,
+    rd: `{ "pct": 9, "done": 3, "of": 32 }`,
     s3: `stored 1–3 · in flight 4–6`,
     os: `empty`
   },
   {
-    k: "Step 5 · All 8 slices stored",
-    h: "8 notebook rows. Still cannot play the movie.",
-    kid: "All slices are in the warehouse. Nobody glued the cake. 100% sent is not 100% ready.",
+    k: "Step 5 · All 32 slices stored",
+    h: "32 notebook rows. Still cannot play the movie.",
+    kid: "All slices are in the warehouse. Nobody glued the cake. 100% sent is not 100% ready. S3 still does not have one playable hour.",
     hit: ["pg","rd","s3"],
-    pg: `upload_part 8 rows
+    pg: `upload_part 32 rows
 session still open
 asset still uploading`,
-    rd: `{ "pct": 100, "done": 8 }`,
-    s3: `8 staging parts
-GET hangar.mp4 → 404`,
+    rd: `{ "pct": 100, "done": 32, "of": 32 }`,
+    s3: `32 staging parts
+GET khan-younis-uav.mp4 → 404`,
     os: `empty`
   },
   {
     k: "Step 6 · Done · glue",
-    h: "The warehouse glues one cake. We throw away the fridge note.",
-    kid: "Tell S3: glue slices 1–8 using the etags in the notebook. If checksums match, the movie exists. You may download it. We have not drawn a cover yet.",
+    h: "Now we tell S3 the list. That is the first time it knows there are 32 parts.",
+    kid: "Complete = 'here are parts 1–32 and their etags, glue them'. If checksums match, the hour exists. You may download it. We have not drawn a cover yet.",
     hit: ["pg","rd","s3","os"],
     pg: `asset.state=uploaded
 session.state=complete
-8 part rows stay
+32 part rows stay
 technical_metadata 0`,
     rd: `DEL progress:upl_99
 0 notes`,
-    s3: `one object 2GB
+    s3: `one object 8GB
 GET works`,
-    os: `SQS { "asset_id": "ast_vid1" }
-tiny message, not 2GB`
+    os: `SQS { "asset_id": "ast_uav1" }
+tiny message, not 8GB`
   },
   {
     k: "Step 7 · Enrich · what is it?",
-    h: "Do not download 2GB. Ask for the first 64KB.",
+    h: "Do not download 8GB. Ask for the first 64KB.",
     kid: "To know it is a movie, peek at the cover. S3 can give 'only these bytes'.",
     hit: ["pg","s3"],
     pg: `technical_metadata 1
@@ -376,20 +383,21 @@ tiny message, not 2GB`
  data={ "family": "video" }
 asset.state=enriching`,
     rd: `0`,
-    s3: `GET bytes=0-65535 of 2GB`,
+    s3: `GET bytes=0-65535 of 8GB`,
     os: `worker has the mail`
   },
   {
     k: "Step 8 · Enrich · numbers from the header",
-    h: "ffprobe reads how long it is. Your tags stay yours.",
-    kid: "You wrote orbit-12. The machine writes '18 minutes, h264'. Two pages. Neither overwrites the other.",
+    h: "ffprobe reads that it is one hour. Your tags stay yours.",
+    kid: "You wrote khan-younis and vehicles. The machine writes '3600 seconds, h264'. Two pages. Neither overwrites the other.",
     hit: ["pg","s3"],
     pg: `technical_metadata 2
  detect { family: video }
- ffprobe { duration_s:1102, codec:h264, 1920x1080 }
-user_metadata unchanged`,
+ ffprobe { duration_s:3600, codec:h264, 1920x1080 }
+user_metadata unchanged
+ tags={uav, khan-younis, gaza, vehicles}`,
     rd: `0`,
-    s3: `small header range. not 2GB`,
+    s3: `small header range. not 8GB`,
     os: `no index yet`
   },
   {
@@ -399,21 +407,23 @@ user_metadata unchanged`,
     hit: ["pg","s3"],
     pg: `derived_artifact 1
  kind=poster
- key=derived/ast_vid1/poster.jpg`,
+ key=derived/ast_uav1/poster.jpg`,
     rd: `0`,
-    s3: `raw 2GB + poster 200KB`,
+    s3: `raw 8GB + poster 200KB`,
     os: `no index`
   },
   {
     k: "Step 10 · Table of contents",
-    h: "Now you can search 'hangar' without knowing the secret id.",
+    h: "Now you can search 'khan-younis' or 'vehicles' without knowing the secret id.",
     kid: "OpenSearch is the contents page at the back. Tear it out and the book (Postgres) is still there. You can write a new contents page.",
     hit: ["pg","os","s3"],
     pg: `asset.state=ready
-17 rows in the notebook for this file`,
+41 rows in the notebook for this file
+ (4 catalog + 32 parts + 2 tech + 1 derived + jobs)`,
     rd: `0`,
-    s3: `2GB + 200KB`,
-    os: `{ ast_vid1, Hangar approach, video, orbit-12, 1102s }`
+    s3: `8GB + 200KB`,
+    os: `{ ast_uav1, Khan Younis vehicle movement,
+  video, uav, khan-younis, 3600s }`
   },
   {
     k: "Failures · what breaks and how we get up",
@@ -427,7 +437,7 @@ user_metadata unchanged`,
 const FAIL = `<table>
 <tr><th>What broke</th><th>What the person sees</th><th>What the machine does</th></tr>
 <tr><td>Part 4 drops on the network</td><td>Bar pauses, then moves</td><td>Only part 4 is PUT again. Rows 1–3 stay. S3 already has them.</td></tr>
-<tr><td>Tab closed at 38%</td><td>Open again — continue at 38%</td><td>IndexedDB + upload_part rows list the missing parts. Fresh URLs if expired. Not from 0.</td></tr>
+<tr><td>Tab closed at 9%</td><td>Open again — continue at 9%</td><td>IndexedDB + upload_part rows list the missing parts. Fresh URLs if expired. Not from 0.</td></tr>
 <tr><td>Complete checksum mismatch</td><td>"File corrupt, try again"</td><td>Abort MPU on S3. asset=failed. Copy metadata to a new session. Staging parts discarded.</td></tr>
 <tr><td>Redis flushed mid-upload</td><td>Percent vanishes a moment</td><td>Count Postgres rows, rewrite the note. No byte is re-sent.</td></tr>
 <tr><td>Worker dies in ffprobe</td><td>File already uploaded, download works</td><td>SQS message returns. Retry. After N failures: partial, not missing.</td></tr>
@@ -447,7 +457,7 @@ function renderFlow() {
   if (s.fail) {
     $("tab-flow").innerHTML = `<div class="kicker">${s.k}</div><h1>${s.h}</h1><p class="kid">${s.kid}</p>${FAIL}`;
   } else {
-    $("tab-flow").innerHTML = `<div class="kicker">${s.k} · hangar.mp4 · 2GB · 8 parts · 3 in flight</div>
+    $("tab-flow").innerHTML = `<div class="kicker">${s.k} · khan-younis-uav.mp4 · 1h · 8GB · 32 parts · 3 in flight</div>
       <h1>${s.h}</h1><p class="kid">${s.kid}</p>
       <div class="dbs">
         <div class="db pg${hit("pg")}"><h2>Postgres notebook — rows that stay</h2><pre>${s.pg}</pre></div>

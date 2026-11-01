@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Aperture — Ingest</title>
+  <title>Sentinel — Ingest</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Syne:wght@600;700&display=swap" rel="stylesheet" />
@@ -14,7 +14,7 @@
     <header class="topbar">
       <div class="brand">
         <div class="brand-mark"></div>
-        <div class="brand-name">ape<span>rture</span></div>
+        <div class="brand-name">sen<span>tinel</span></div>
       </div>
       <nav class="nav">
         <a href="pipeline.html">Pipeline</a>
@@ -42,7 +42,7 @@
         <h2>In flight</h2>
         <div class="rail-item"><span class="dot"></span> Orbit 12 take <span class="count">62%</span></div>
         <div class="rail-item"><span class="dot green"></span> Lab notes <span class="count">sealed</span></div>
-        <div class="rail-item"><span class="dot mute"></span> Hangar stills <span class="count">queued</span></div>
+        <div class="rail-item"><span class="dot mute"></span> Khan Younis stills <span class="count">queued</span></div>
         <div style="height:18px"></div>
         <h2>Collections</h2>
         <div class="rail-item"><span class="dot violet"></span> Orbit missions</div>
@@ -122,7 +122,7 @@
           <div class="q-row" data-file="stills">
             <span class="dot mute"></span>
             <div>
-              <div class="file-name">Hangar stills</div>
+              <div class="file-name">Khan Younis stills</div>
               <div class="file-sub">12 images · set</div>
               <div class="bar warn"><i style="width:0%"></i></div>
             </div>
@@ -202,7 +202,7 @@
     </div>
     <footer class="status">
       <span>control plane <b>catalog-api</b></span>
-      <span>data plane <b>s3://aperture-raw</b></span>
+      <span>data plane <b>s3://sentinel-raw</b></span>
       <span>session <b>upl_44c</b></span>
       <span>parts sealed <b>3,812 / 6,144</b></span>
     </footer>
@@ -211,7 +211,7 @@
     const titles = {
       orbit: "Orbit 12 — X-band take",
       notes: "Lab notes — week 43",
-      stills: "Hangar stills"
+      stills: "Khan Younis stills"
     };
     document.querySelectorAll(".q-row").forEach((row) => {
       row.addEventListener("click", (event) => {

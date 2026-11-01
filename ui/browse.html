@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Aperture — Browse</title>
+  <title>Sentinel — Browse</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Syne:wght@600;700&display=swap" rel="stylesheet" />
@@ -14,7 +14,7 @@
     <header class="topbar">
       <div class="brand">
         <div class="brand-mark"></div>
-        <div class="brand-name">ape<span>rture</span></div>
+        <div class="brand-name">sen<span>tinel</span></div>
       </div>
       <nav class="nav">
         <a href="pipeline.html">Pipeline</a>
@@ -38,7 +38,7 @@
         <h2>Collections</h2>
         <div class="rail-item active"><span class="dot"></span> Orbit missions <span class="count">418</span></div>
         <div class="rail-item"><span class="dot blue"></span> Lab docs <span class="count">12.4k</span></div>
-        <div class="rail-item"><span class="dot violet"></span> Hangar media <span class="count">86k</span></div>
+        <div class="rail-item"><span class="dot violet"></span> Gaza UAV <span class="count">86k</span></div>
         <div class="rail-item"><span class="dot green"></span> Ground truth <span class="count">2.1k</span></div>
         <div class="rail-item"><span class="dot mute"></span> Unsorted <span class="count">307</span></div>
         <div style="height:18px"></div>
@@ -92,8 +92,8 @@
               <div class="play">▶</div>
             </div>
             <div class="card-body">
-              <h3>Approach reel 12</h3>
-              <div class="meta">4.1 GB · 00:18:22 · enriching</div>
+              <h3>Khan Younis vehicle movement</h3>
+              <div class="meta">8.0 GB · 01:00:00 · ready</div>
             </div>
           </article>
           <article class="card" data-id="doc">
@@ -106,7 +106,7 @@
           <article class="card" data-id="img">
             <div class="thumb image"><span class="badge tag">image</span></div>
             <div class="card-body">
-              <h3>Hangar north, dusk</h3>
+              <h3>Khan Younis still — dusk</h3>
               <div class="meta">24 MP · 14.2 MB · ready</div>
             </div>
           </article>
@@ -138,11 +138,11 @@
           </div>
           <div class="list-row" data-id="video">
             <span class="dot blue"></span>
-            <div><div class="file-name">Approach reel 12</div><div class="file-sub">video</div></div>
-            <div>4.1 GB</div>
-            <div>—</div>
-            <div>orbit-12</div>
-            <div><span class="badge run">enriching</span></div>
+            <div><div class="file-name">Khan Younis vehicle movement</div><div class="file-sub">video</div></div>
+            <div>8.0 GB</div>
+            <div>quadcopter</div>
+            <div>uav · vehicles</div>
+            <div><span class="badge ok">ready</span></div>
           </div>
           <div class="list-row" data-id="unknown">
             <span class="dot mute"></span>
@@ -225,15 +225,15 @@
         ]
       },
       video: {
-        name: "Approach reel 12",
-        sub: "ast_3M8 · Orbit missions · enriching",
+        name: "Khan Younis vehicle movement",
+        sub: "ast_uav1 · Gaza UAV · ready",
         thumb: "video",
         tech: [
           ["extractor.detect", "ok"],
           ["family", "video"],
           ["codec", "h264"],
-          ["ffprobe", "running"],
-          ["poster", "queued"]
+          ["duration_s", "3600"],
+          ["poster", "ok"]
         ]
       },
       doc: {
@@ -249,8 +249,8 @@
         ]
       },
       img: {
-        name: "Hangar north, dusk",
-        sub: "ast_9A · Hangar media · ready",
+        name: "Khan Younis still — dusk",
+        sub: "ast_9A · Gaza UAV · ready",
         thumb: "image",
         tech: [
           ["extractor.detect", "ok"],

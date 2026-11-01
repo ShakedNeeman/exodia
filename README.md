@@ -1,4 +1,4 @@
-# Aperture
+# Sentinel
 
 A catalog and ingest plane for tens of terabytes of highly diverse files — documents, images, video, radar, and formats we do not know yet.
 
@@ -177,7 +177,7 @@ Part size is adaptive:
 - 100 GB–4 TB → 256 MB parts
 - above 4 TB → sized so the file stays under 8,000 of the 10,000 part limit
 
-S3 objects now go up to ~50 TB (10,000 × 5 GiB). Aperture still models an **asset** as a logical record that can point at one object or many. Radar collections, directories, and sidecar sets (`*.sigmf-meta` + `*.sigmf-data`) are one asset, several objects.
+S3 objects now go up to ~50 TB (10,000 × 5 GiB). Sentinel still models an **asset** as a logical record that can point at one object or many. Radar collections, directories, and sidecar sets (`*.sigmf-meta` + `*.sigmf-data`) are one asset, several objects.
 
 ### 3. Seal — integrity, then the catalog flips to `uploaded`
 

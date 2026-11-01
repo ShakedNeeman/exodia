@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Aperture — UML</title>
+  <title>Sentinel — UML</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Syne:wght@700&display=swap" rel="stylesheet" />
@@ -59,7 +59,7 @@
 </head>
 <body>
   <header class="top">
-    <div class="brand">ape<em>rture</em></div>
+    <div class="brand">sen<em>tinel</em></div>
     <nav class="nav">
       <a href="index.html">Home</a>
       <a href="pipeline.html">Pipeline</a>
@@ -118,6 +118,7 @@ sequenceDiagram
   Client->>API: POST /uploads + user metadata
   API->>PG: INSERT asset draft, object, user_metadata, session
   API->>S3: CreateMultipartUpload
+  Note right of S3: S3 is not told how many parts
   S3-->>API: uploadId
   API->>Redis: SET progress pct=0
   API-->>Client: session + presigned URLs
