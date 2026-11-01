@@ -2,12 +2,12 @@
 
 Interactive walkthrough: [`../ui/pipeline.html`](../ui/pipeline.html).
 
-Example: one-hour UAV pass over Khan Younis, `khan-younis-uav.mp4`, 8 GB, **32 parts** of 256 MB, **3 in flight**. S3 is not told the part count at create time — only the ordered etag list at Complete. Same design as 100 parts; only the `upload_part` row count changes.
+Example: one-hour unmanned aerial vehicle pass over Khan Younis, `khan-younis-unmanned-aerial-vehicle.mp4`, 8 GB, **32 parts** of 256 MB, **3 in flight**. S3 is not told the part count at create time — only the ordered etag list at Complete. Same design as 100 parts; only the `upload_part` row count changes.
 
 | Step | What happens | Postgres | Redis | S3 | OpenSearch / SQS |
 |---|---|---|---|---|---|
 | 0 Before | File chosen, Start not pressed | 0 rows for this file | empty | no object | empty |
-| 1 Intent | JSON to API, MPU opened | 1 asset `draft` + 1 object + 1 user_metadata + 1 session. **0 parts**. session.part_count=32 | **1 key** `progress:upl_99` pct=0 of=32 | uploadId `mpu_X`, 0 parts stored. S3 does not know 32 yet | empty |
+| 1 Intent | JSON to API, multipart upload opened | 1 asset `draft` + 1 object + 1 user_metadata + 1 session. **0 parts**. session.part_count=32 | **1 key** `progress:upl_99` pct=0 of=32 | multipart_upload_id `upload-X`, 0 parts stored. S3 does not know 32 yet | empty |
 | 2 In flight | PUT parts 1–3 to S3 | unchanged | unchanged | 3 PUTs in the air | empty |
 | 3 Part 2 lands first | Out of order is fine | **1** `upload_part` row (part 2). asset → `uploading` | same 1 key, pct=3 | part 2 stored | empty |
 | 4 Parts 1 and 3 land | Start parts 4–6 | **3** part rows | same 1 key, pct=9 | 1–3 stored, 4–6 in flight | empty |
@@ -46,7 +46,7 @@ Counts to say out loud:
 |---|---|---|
 | Part 4 drops | Bar pauses, then moves | Retry only that PUT. Other `upload_part` rows stay. |
 | Tab closed at 9% | Resume at 9% | IndexedDB + Postgres list missing parts. New URLs if expired. |
-| Complete checksum mismatch | "Corrupt, try again" | Abort MPU. `asset=failed`. Copy metadata to a new session. |
+| Complete checksum mismatch | "Corrupt, try again" | Abort Multipart Upload. `asset=failed`. Copy metadata to a new session. |
 | Redis flushed | Percent blinks | Recount Postgres parts, rewrite the one key. No re-upload. |
 | Worker dies | File already downloadable | SQS retry. After N: `partial`, not missing. |
 | Unknown type | `unknown` badge, tags remain | detect ends; extractors skipped. A type, not an error. |

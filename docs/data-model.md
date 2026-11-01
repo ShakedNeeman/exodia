@@ -125,12 +125,12 @@ Flattened, rebuildable, not authoritative.
   "size_bytes": 1649267441664,
   "created_by": "shaked",
   "uploaded_at": "2026-10-31T10:12:00Z",
-  "platform": "UAV-7",
+  "platform": "unmanned-aerial-vehicle-7",
   "sensor": "X-SAR",
   "duration_s": 412.4,
   "width": null,
   "height": null,
-  "text": "Orbit 12 — X-band take  UAV-7  X-SAR  night"
+  "text": "Orbit 12 — X-band take  unmanned-aerial-vehicle-7  X-SAR  night"
 }
 ```
 
@@ -144,7 +144,7 @@ ACL is not trusted from this document. The API hydrates allowed `collection_id`s
 {
   "collection_id": "col_mission_orbit",
   "fields": [
-    { "key": "platform", "type": "enum", "values": ["UAV-7", "UAV-2", "ground"] },
+    { "key": "platform", "type": "enum", "values": ["unmanned-aerial-vehicle-7", "unmanned-aerial-vehicle-2", "ground"] },
     { "key": "sensor",   "type": "string", "required": true },
     { "key": "heading",  "type": "number" }
   ]

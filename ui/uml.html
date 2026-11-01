@@ -89,7 +89,7 @@ flowchart LR
   end
   C -->|"JSON: sessions, metadata, search"| API
   C -->|"presigned PUT / GET"| S3
-  API -->|"CreateMPU · sign · Complete"| S3
+  API -->|"CreateMultipartUpload · sign · Complete"| S3
   API --> PG[(PostgreSQL)]
   API --> Redis[(Redis)]
   API --> SQS[SQS]

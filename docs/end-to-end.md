@@ -58,7 +58,7 @@ POST /v1/uploads
   "user_metadata": {
     "title": "Orbit 12 — X-band take",
     "tags": ["x-band", "orbit-12", "night"],
-    "fields": { "platform": "UAV-7", "sensor": "X-SAR" }
+    "fields": { "platform": "unmanned-aerial-vehicle-7", "sensor": "X-SAR" }
   },
   "siblings": [
     { "filename": "orbit-12.sigmf-meta", "role": "sidecar", "size_bytes": 18432 }
@@ -78,7 +78,7 @@ Response:
     {
       "role": "primary",
       "key": "raw/2026/10/ast_8K1/orbit-12.sigmf-data",
-      "multipart_upload_id": "mpu_…",
+      "multipart_upload_id": "upload-X",
       "parts": { "from": 1, "to": 32, "url_batch": ["https://…"] }
     }
   ]
@@ -208,7 +208,7 @@ A file in `enriching` is visible. The inspector shows a live list of extractors,
 | Laptop sleep | same |
 | Presigned URL expired | `POST /uploads/{id}/urls` → new batch |
 | One part 500 | retry part |
-| Complete checksum mismatch | new session, metadata copied, old MPU aborted |
+| Complete checksum mismatch | new session, metadata copied, old multipart upload aborted |
 | Worker OOM on a huge video | message returns to SQS; video queue is isolated; asset stays `uploaded` |
 | OpenSearch down | detail pages work; facet search degrades; indexer catches up |
 
@@ -216,7 +216,7 @@ A file in `enriching` is visible. The inspector shows a live list of extractors,
 
 | Method | Path | Purpose |
 |---|---|---|
-| `POST` | `/v1/uploads` | Create asset + session + MPU |
+| `POST` | `/v1/uploads` | Create asset + session + multipart upload |
 | `POST` | `/v1/uploads/{id}/urls` | Next presigned batch |
 | `POST` | `/v1/uploads/{id}/parts` | Record a completed part |
 | `POST` | `/v1/uploads/{id}/complete` | Seal |
