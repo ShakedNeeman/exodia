@@ -12,6 +12,7 @@ UML lives in the repo, not only in HTML:
 - Hebrew: [`docs/uml.he.md`](docs/uml.he.md)
 - Interactive EN / עב: [`ui/uml.html`](ui/uml.html)
 - Presentation slides: [`ui/present.html`](ui/present.html) · notes [`docs/present.md`](docs/present.md) / [`docs/present.he.md`](docs/present.he.md)
+- One-file pipeline (what each DB holds at each step): [`ui/pipeline.html`](ui/pipeline.html) · [`docs/pipeline.md`](docs/pipeline.md) / [`docs/pipeline.he.md`](docs/pipeline.he.md)
 
 ```bash
 open ui/present.html

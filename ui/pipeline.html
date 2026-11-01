@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aperture — File pipeline</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Hebrew:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Syne:wght@700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0c0e12; --elev: #13171d; --line: #2a3340; --text: #eef2f6;
+      --muted: #8d98a6; --faint: #6b7582; --accent: #f0a14a; --accent-dim: #3d2a14;
+      --signal: #3ddc97; --signal-dim: #123528; --blue: #7eb6ff; --blue-dim: #173047;
+      --rose: #f07167;
+      --sans: "IBM Plex Sans Hebrew", "IBM Plex Sans", sans-serif;
+      --display: "Syne", "IBM Plex Sans Hebrew", sans-serif;
+      --mono: "IBM Plex Mono", ui-monospace, monospace;
+    }
+    html[lang="en"] { direction: ltr; }
+    html[lang="en"] body { font-family: "IBM Plex Sans", sans-serif; }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); }
+    body { display: grid; grid-template-rows: 52px 1fr 64px; }
+    .top { display: flex; align-items: center; gap: 14px; padding: 0 16px; border-bottom: 1px solid var(--line); }
+    .brand { font-family: var(--display); font-weight: 700; }
+    .brand em { color: var(--accent); font-style: normal; }
+    .nav a { color: var(--muted); text-decoration: none; margin-inline-end: 10px; font-size: 13px; }
+    .nav a.on { color: var(--text); }
+    .lang { margin-inline-start: auto; display: flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; background: var(--elev); }
+    .lang button { border: 0; background: none; color: var(--muted); font: inherit; padding: 4px 10px; border-radius: 999px; cursor: pointer; }
+    .lang button.on { background: var(--accent-dim); color: var(--accent); }
+    .stage { padding: 22px 28px 12px; overflow: auto; }
+    .kicker { color: var(--accent); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+    h1 { font-family: var(--display); font-size: 26px; letter-spacing: -0.03em; margin: 4px 0 8px; }
+    .who { color: var(--muted); font-size: 14px; margin: 0 0 12px; max-width: 70em; }
+    .dbs { display: grid; grid-template-columns: 1.15fr 1fr 0.85fr 0.85fr; gap: 8px; }
+    @media (max-width: 980px) { .dbs { grid-template-columns: 1fr 1fr; } }
+    .db { background: var(--elev); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; min-height: 148px; }
+    .db h2 { margin: 0 0 6px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); font-weight: 500; }
+    .db.hit { border-color: var(--accent); }
+    .db.s3.hit { border-color: #1f5a40; }
+    .db.os.hit { border-color: #2a4d6d; }
+    .db pre, .row { font-family: var(--mono); font-size: 11px; direction: ltr; text-align: left; color: #d7dee6; margin: 0; white-space: pre-wrap; line-height: 1.45; }
+    .empty { color: var(--faint); font-size: 13px; }
+    .chg { color: var(--accent); }
+    .ok { color: var(--signal); }
+    .foot { border-top: 1px solid var(--line); display: flex; align-items: center; gap: 10px; padding: 0 16px; }
+    .foot button { background: #1a2028; border: 1px solid var(--line); color: var(--text); border-radius: 10px; padding: 8px 12px; cursor: pointer; font: inherit; }
+    .foot button.primary { background: var(--accent); color: #1a1208; border-color: #d48a30; font-weight: 600; }
+    .bar { flex: 1; height: 5px; background: #2a313b; border-radius: 99px; overflow: hidden; }
+    .bar i { display: block; height: 100%; background: var(--accent); width: 0; }
+    .count { font-family: var(--mono); font-size: 12px; color: var(--faint); }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="brand">ape<em>rture</em></div>
+    <nav class="nav">
+      <a href="present.html" data-i="navPresent">הצגה</a>
+      <a class="on" href="pipeline.html" data-i="navPipe">פלואו</a>
+      <a href="uml.html" data-i="navUml">UML</a>
+      <a href="upload.html" data-i="navUpload">העלאה</a>
+      <a href="browse.html" data-i="navBrowse">גלישה</a>
+    </nav>
+    <div class="lang">
+      <button type="button" id="btn-en">EN</button>
+      <button type="button" id="btn-he" class="on">עב</button>
+    </div>
+  </header>
+  <main class="stage" id="stage"></main>
+  <footer class="foot">
+    <button type="button" id="prev" data-i="prev">הקודם</button>
+    <button type="button" class="primary" id="next" data-i="next">הבא</button>
+    <div class="bar"><i id="bar"></i></div>
+    <span class="count" id="count"></span>
+  </footer>
+<script>
+const FILE = {
+  he: "הקובץ: hangar.mp4 · 2 GB · 8 חלקים של 256MB · במקביל רצים עד 3 חלקים",
+  en: "File: hangar.mp4 · 2 GB · 8 parts of 256MB · up to 3 parts in flight"
+};
+
+const T = {
+  he: {
+    navPresent: "הצגה", navPipe: "פלואו", navUml: "UML", navUpload: "העלאה", navBrowse: "גלישה",
+    prev: "הקודם", next: "הבא",
+    pg: "Postgres · מחברת", rd: "Redis · מד", s3: "S3 · מחסן", os: "OpenSearch / תור"
+  },
+  en: {
+    navPresent: "Present", navPipe: "Pipeline", navUml: "UML", navUpload: "Ingest", navBrowse: "Browse",
+    prev: "Previous", next: "Next",
+    pg: "Postgres · notebook", rd: "Redis · gauge", s3: "S3 · store", os: "OpenSearch / queue"
+  }
+};
+
+const STEPS = {
+  he: [
+    {
+      k: "0 · לפני",
+      h: "המשתמש בחר קובץ. שום דבר עוד לא נשמר.",
+      who: "במסך: כותרת Hangar approach, אוסף Hangar media, תגית orbit-12. לחצן Start עוד לא נלחץ.",
+      hit: [],
+      pg: "אין שורות על הקובץ הזה.\n\ncollection Hangar media כבר קיימת.",
+      rd: "ריק.",
+      s3: "הבאקט קיים.\nאין אובייקט hangar.mp4.",
+      os: "התור ריק.\nהאינדקס לא מכיר את הקובץ."
+    },
+    {
+      k: "1 · Intent · לחצו Start",
+      h: "נולדת רשומה. נולד סשן. עדיין אין בייטים.",
+      who: "הדפדפן שולח JSON ל-API: שם, 2GB, תגיות. ה-API כותב ל-Postgres ופותח multipart ב-S3. מחזיר uploadId + 3 URLs חתומים לחלקים 1–3.",
+      hit: ["pg", "rd", "s3"],
+      pg: "asset          1 שורה  ast_vid1  state=draft\nasset_object   1        hangar.mp4 → raw/…/hangar.mp4\nuser_metadata  1        tags={orbit-12}  title=Hangar approach\nupload_session 1        upl_99  parts=8  mpu_id=mpu_X\nupload_part    0 שורות",
+      rd: "1 מפתח\nprogress:upl_99 =\n{ pct:0, part:0, of:8 }",
+      s3: "CreateMultipartUpload\nuploadId = mpu_X\nחלקים: 0\nאין קובץ שאפשר להוריד.",
+      os: "אין הודעה.\nאין מסמך חיפוש."
+    },
+    {
+      k: "2 · Transfer · 3 חלקים באוויר",
+      h: "הדפדפן שולח חלקים 1, 2, 3 במקביל ישר ל-S3.",
+      who: "ה-API לא רואה את הבייטים. שלושה PUT לכתובות חתומות. Postgres ו-Redis עדיין כמו בשלב 1 — החלקים עוד בדרך.",
+      hit: ["s3"],
+      pg: "בלי שינוי.\nupload_part עדיין 0 — אף חלק לא אישר S3.",
+      rd: "בלי שינוי.\npct: 0",
+      s3: "באוויר: PUT חלק 1, 2, 3\nכל אחד 256MB.\nעדיין לא הורכב אובייקט.",
+      os: "ריק."
+    },
+    {
+      k: "3 · חלק 2 נחת ראשון",
+      h: "החלקים לא חייבים להגיע לפי הסדר.",
+      who: "S3 מחזיר etag לחלק 2. הדפדפן מדווח ל-API. Postgres מוסיף שורה. Redis דורס את אותו מפתח ל-13%.",
+      hit: ["pg", "rd", "s3"],
+      pg: "upload_part  1 שורה\n  (upl_99, 2)  etag=e2\n\nהשאר אותו דבר.\nasset.state עדיין draft → uploading",
+      rd: "עדיין 1 מפתח (נדרס)\nprogress:upl_99 =\n{ pct:13, part:2, of:8, inflight:[1,3] }",
+      s3: "חלק 2 שמור תחת mpu_X.\nחלקים 1 ו-3 עדיין בדרך.",
+      os: "ריק."
+    },
+    {
+      k: "4 · חלקים 1 ו-3 נחתו · שולחים 4–6",
+      h: "תמיד עד 3 באוויר. Postgres צובר שורות. Redis נשאר מפתח אחד.",
+      who: "3 שורות ביומן החלקים. הדפדפן מתחיל PUT לחלקים 4, 5, 6.",
+      hit: ["pg", "rd", "s3"],
+      pg: "upload_part  3 שורות\n  part 1  etag=e1\n  part 2  etag=e2\n  part 3  etag=e3\n\nasset.state = uploading\n(4 שורות קטלוג + 3 חלקים)",
+      rd: "1 מפתח\n{ pct:38, parts_done:3, of:8 }",
+      s3: "שמורים: חלקים 1,2,3\nבאוויר: 4,5,6\nאין hangar.mp4 שלם.",
+      os: "ריק."
+    },
+    {
+      k: "5 · כל 8 החלקים ב-S3",
+      h: "יש 8 שורות ב-Postgres. עדיין אין קובץ להורדה.",
+      who: "S3 מחזיק 8 חלקים במחסן ביניים. בלי Complete הם לא נהיים לסרטון. Redis מראה 100% העברה, לא 100% מוכן.",
+      hit: ["pg", "rd", "s3"],
+      pg: "upload_part  8 שורות  (1…8)\nupload_session  open\nasset           uploading\n\n8 etag מוכנים ל-Complete.",
+      rd: "1 מפתח\n{ pct:100, part:8, of:8 }",
+      s3: "8 חלקים תחת mpu_X\nComplete עוד לא רץ\nGET hangar.mp4 = לא קיים",
+      os: "ריק."
+    },
+    {
+      k: "6 · Seal · Complete",
+      h: "S3 מדביק. הקטלוג הופך ל-uploaded. Redis נמחק.",
+      who: "הדפדפן שולח את 8 ה-etag מה-API. ה-API קורא CompleteMultipart. checksum תואם. הקובץ הגולמי עכשיו ניתן להורדה — עוד לפני העשרה.",
+      hit: ["pg", "rd", "s3", "os"],
+      pg: "asset.state = uploaded\nuploaded_at = עכשיו\nupload_session = complete\nupload_part נשאר 8 שורות (תיעוד)\n\nאין technical_metadata עדיין.",
+      rd: "DEL progress:upl_99\n0 מפתחות על ההעלאה.\nהמד סיים.",
+      s3: "אובייקט אחד:\nraw/…/hangar.mp4  2GB\nהחלקים הורכבו.\nאפשר GET.",
+      os: "SQS: הודעה אחת\nasset.uploaded ast_vid1\n(כמה מאות בתים, לא 2GB)\nחיפוש: עדיין אין מסמך"
+    },
+    {
+      k: "7 · Enrich · detect",
+      h: "ה-worker לא מוריד 2GB. הוא מבקש 64KB ראשונים.",
+      who: "לוקח את ההודעה מהתור. GET bytes=0-65535 מ-S3. רואה שזה MP4. כותב שורה detect ב-Postgres.",
+      hit: ["pg", "s3"],
+      pg: "technical_metadata  1 שורה\n  extractor=detect\n  data={ family: video, mime: video/mp4 }\n\nasset.family = video\nasset.state = enriching\nenrichment_job detect = ok",
+      rd: "לא מעורב.",
+      s3: "GET range 64KB מתוך 2GB.\nלא הורדה מלאה.\nraw/…/hangar.mp4 במקום.",
+      os: "ההודעה בתהליך.\nאין עדיין מסמך חיפוש מלא."
+    },
+    {
+      k: "8 · Enrich · extract",
+      h: "ffprobe קורא כותרת. כותב מספרים. לא את הסרט.",
+      who: "עוד range / קריאת moov. משך 00:18:22, h264, 1920×1080. מסמך טכני נפרד מהתגיות שהמשתמש כתב.",
+      hit: ["pg", "s3"],
+      pg: "technical_metadata  2 שורות\n  detect   { family: video }\n  ffprobe  { duration:1102, codec:h264,\n             width:1920, height:1080 }\n\nuser_metadata לא נגענו.\n  עדיין tags={orbit-12}",
+      rd: "לא מעורב.",
+      s3: "עוד range קטן (כותרת).\n2GB לא ירדו לדיסק של ה-worker.",
+      os: "עדיין בלי מסמך חיפוש."
+    },
+    {
+      k: "9 · Enrich · derive",
+      h: "פריים אחד → JPEG קטן ב-derived/. לא טרה ולא 2GB.",
+      who: "מפענחים פריים ליד שנייה 5. מעלים poster.jpg של ~200KB. הקובץ הגולמי לא זז.",
+      hit: ["pg", "s3"],
+      pg: "derived_artifact  1 שורה\n  kind=poster\n  key=derived/ast_vid1/poster.jpg\n  1920×1080",
+      rd: "לא מעורב.",
+      s3: "raw/…/hangar.mp4     2GB  (כמו שהיה)\nderived/…/poster.jpg  ~200KB  (חדש)",
+      os: "עדיין בלי אינדקס."
+    },
+    {
+      k: "10 · Index + Browse",
+      h: "מסמך שטוח לחיפוש. הקובץ כבר היה קיים מאז שלב 6.",
+      who: "OpenSearch מקבל כותרת, תגיות, family=video, משך. גלישה רצה על זה. פתיחת כרטיס לפי id חוזרת ל-Postgres.",
+      hit: ["pg", "os", "s3"],
+      pg: "asset.state = ready\n\nסיכום שורות לקובץ הזה:\n  asset 1 · object 1 · metadata 1\n  session 1 · parts 8\n  technical 2 · derived 1 · jobs 2",
+      rd: "0 מפתחות.",
+      s3: "raw 2GB + poster 200KB",
+      os: "1 מסמך\n{ ast_vid1, Hangar approach,\n  video, orbit-12, 18:22 }\nSQS: ההודעה נמחקה"
+    }
+  ],
+  en: [
+    {
+      k: "0 · Before",
+      h: "The user picked a file. Nothing is stored yet.",
+      who: "On screen: title Hangar approach, collection Hangar media, tag orbit-12. Start has not been pressed.",
+      hit: [],
+      pg: "No rows for this file.\n\ncollection Hangar media already exists.",
+      rd: "Empty.",
+      s3: "The bucket exists.\nNo hangar.mp4 object.",
+      os: "Queue empty.\nSearch does not know this file."
+    },
+    {
+      k: "1 · Intent · Start",
+      h: "A catalog row is born. A session is born. Still no bytes.",
+      who: "The browser sends JSON: name, 2GB, tags. The API writes Postgres and opens multipart on S3. Returns uploadId + 3 signed URLs for parts 1–3.",
+      hit: ["pg", "rd", "s3"],
+      pg: "asset          1 row   ast_vid1  state=draft\nasset_object   1       hangar.mp4 → raw/…/hangar.mp4\nuser_metadata  1       tags={orbit-12}\nupload_session 1       upl_99  parts=8  mpu_id=mpu_X\nupload_part    0 rows",
+      rd: "1 key\nprogress:upl_99 =\n{ pct:0, part:0, of:8 }",
+      s3: "CreateMultipartUpload\nuploadId = mpu_X\nparts stored: 0\nNothing downloadable.",
+      os: "No message.\nNo search document."
+    },
+    {
+      k: "2 · Transfer · 3 parts in flight",
+      h: "The browser PUTs parts 1, 2, 3 in parallel, straight to S3.",
+      who: "The API does not see the bytes. Three PUTs to signed URLs. Postgres and Redis are unchanged — nothing has been acknowledged yet.",
+      hit: ["s3"],
+      pg: "Unchanged.\nupload_part still 0 — S3 has not acked a part.",
+      rd: "Unchanged.\npct: 0",
+      s3: "In flight: PUT parts 1, 2, 3\n256MB each.\nNo assembled object.",
+      os: "Empty."
+    },
+    {
+      k: "3 · Part 2 lands first",
+      h: "Parts do not have to arrive in order.",
+      who: "S3 returns an etag for part 2. The browser reports it. Postgres inserts one row. Redis overwrites the same key to 13%.",
+      hit: ["pg", "rd", "s3"],
+      pg: "upload_part  1 row\n  (upl_99, 2)  etag=e2\n\nEverything else same.\nasset.state draft → uploading",
+      rd: "Still 1 key (overwritten)\n{ pct:13, part:2, of:8, inflight:[1,3] }",
+      s3: "Part 2 stored under mpu_X.\nParts 1 and 3 still in flight.",
+      os: "Empty."
+    },
+    {
+      k: "4 · Parts 1 and 3 land · start 4–6",
+      h: "Always ≤3 in flight. Postgres grows rows. Redis stays one key.",
+      who: "Three ledger rows. The browser starts PUT for parts 4, 5, 6.",
+      hit: ["pg", "rd", "s3"],
+      pg: "upload_part  3 rows\n  part 1  etag=e1\n  part 2  etag=e2\n  part 3  etag=e3\n\nasset.state = uploading",
+      rd: "1 key\n{ pct:38, parts_done:3, of:8 }",
+      s3: "Stored: 1,2,3\nIn flight: 4,5,6\nNo complete hangar.mp4.",
+      os: "Empty."
+    },
+    {
+      k: "5 · All 8 parts on S3",
+      h: "Eight Postgres rows. Still no downloadable file.",
+      who: "S3 holds 8 staging parts. Without Complete they are not a video. Redis shows 100% transferred, not 100% ready.",
+      hit: ["pg", "rd", "s3"],
+      pg: "upload_part  8 rows  (1…8)\nupload_session  open\nasset           uploading\n\n8 etags ready for Complete.",
+      rd: "1 key\n{ pct:100, part:8, of:8 }",
+      s3: "8 parts under mpu_X\nComplete not called\nGET hangar.mp4 = no such key",
+      os: "Empty."
+    },
+    {
+      k: "6 · Seal · Complete",
+      h: "S3 concatenates. Catalog becomes uploaded. Redis is deleted.",
+      who: "The browser sends the 8 etags. The API calls CompleteMultipart. Checksums match. The raw file is downloadable before enrichment starts.",
+      hit: ["pg", "rd", "s3", "os"],
+      pg: "asset.state = uploaded\nuploaded_at = now\nupload_session = complete\nupload_part stays 8 rows\n\nno technical_metadata yet",
+      rd: "DEL progress:upl_99\n0 keys for this upload.\nThe gauge is done.",
+      s3: "One object:\nraw/…/hangar.mp4  2GB\nParts assembled.\nGET works.",
+      os: "SQS: one message\nasset.uploaded ast_vid1\n(hundreds of bytes, not 2GB)\nSearch: no document yet"
+    },
+    {
+      k: "7 · Enrich · detect",
+      h: "The worker does not download 2GB. It asks for the first 64KB.",
+      who: "Takes the queue message. GET bytes=0-65535 from S3. Sees MP4. Writes a detect row in Postgres.",
+      hit: ["pg", "s3"],
+      pg: "technical_metadata  1 row\n  extractor=detect\n  data={ family: video, mime: video/mp4 }\n\nasset.family = video\nasset.state = enriching",
+      rd: "Not involved.",
+      s3: "GET range 64KB of 2GB.\nNot a full download.\nraw object stays put.",
+      os: "Message in flight.\nNo full search document yet."
+    },
+    {
+      k: "8 · Enrich · extract",
+      h: "ffprobe reads a header. Writes numbers. Not the movie.",
+      who: "Another range / moov read. Duration 00:18:22, h264, 1920×1080. Technical doc stays separate from user tags.",
+      hit: ["pg", "s3"],
+      pg: "technical_metadata  2 rows\n  detect   { family: video }\n  ffprobe  { duration:1102, codec:h264,\n             width:1920, height:1080 }\n\nuser_metadata untouched\n  still tags={orbit-12}",
+      rd: "Not involved.",
+      s3: "Another small range (header).\n2GB never lands on the worker disk.",
+      os: "Still no search document."
+    },
+    {
+      k: "9 · Enrich · derive",
+      h: "One frame → a small JPEG in derived/. Not 2GB.",
+      who: "Decode a frame near second 5. Upload poster.jpg ~200KB. The raw object does not move.",
+      hit: ["pg", "s3"],
+      pg: "derived_artifact  1 row\n  kind=poster\n  key=derived/ast_vid1/poster.jpg",
+      rd: "Not involved.",
+      s3: "raw/…/hangar.mp4     2GB  (unchanged)\nderived/…/poster.jpg  ~200KB  (new)",
+      os: "Still no index."
+    },
+    {
+      k: "10 · Index + Browse",
+      h: "A flat search document. The file has existed since step 6.",
+      who: "OpenSearch gets title, tags, family=video, duration. Browse uses that. Opening by id always hits Postgres.",
+      hit: ["pg", "os", "s3"],
+      pg: "asset.state = ready\n\nRows for this file:\n  asset 1 · object 1 · metadata 1\n  session 1 · parts 8\n  technical 2 · derived 1 · jobs 2",
+      rd: "0 keys.",
+      s3: "raw 2GB + poster 200KB",
+      os: "1 document\n{ ast_vid1, Hangar approach,\n  video, orbit-12, 18:22 }\nSQS: message deleted"
+    }
+  ]
+};
+
+let lang = "he";
+let i = 0;
+const $ = (id) => document.getElementById(id);
+
+function render() {
+  const L = T[lang];
+  const s = STEPS[lang][i];
+  const hit = (n) => s.hit.includes(n) ? " hit" : "";
+  $("stage").innerHTML = `
+    <div class="kicker">${s.k} · ${FILE[lang]}</div>
+    <h1>${s.h}</h1>
+    <p class="who">${s.who}</p>
+    <div class="dbs">
+      <div class="db pg${hit("pg")}"><h2>${L.pg}</h2><pre>${s.pg}</pre></div>
+      <div class="db rd${hit("rd")}"><h2>${L.rd}</h2><pre>${s.rd}</pre></div>
+      <div class="db s3${hit("s3")}"><h2>${L.s3}</h2><pre>${s.s3}</pre></div>
+      <div class="db os${hit("os")}"><h2>${L.os}</h2><pre>${s.os}</pre></div>
+    </div>`;
+  $("count").textContent = (i + 1) + " / " + STEPS[lang].length;
+  $("bar").style.width = ((i + 1) / STEPS[lang].length * 100) + "%";
+  document.querySelectorAll("[data-i]").forEach((el) => {
+    const k = el.getAttribute("data-i");
+    if (L[k]) el.textContent = L[k];
+  });
+  $("btn-en").classList.toggle("on", lang === "en");
+  $("btn-he").classList.toggle("on", lang === "he");
+}
+function apply(next) {
+  lang = next;
+  document.documentElement.lang = next;
+  document.documentElement.dir = next === "he" ? "rtl" : "ltr";
+  render();
+}
+$("prev").onclick = () => { i = Math.max(0, i - 1); render(); };
+$("next").onclick = () => { i = Math.min(STEPS[lang].length - 1, i + 1); render(); };
+$("btn-en").onclick = () => apply("en");
+$("btn-he").onclick = () => apply("he");
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+  const fwd = document.documentElement.dir === "rtl" ? e.key === "ArrowLeft" : e.key === "ArrowRight";
+  i = fwd ? Math.min(STEPS[lang].length - 1, i + 1) : Math.max(0, i - 1);
+  render();
+});
+apply("he");
+</script>
+</body>
+</html>

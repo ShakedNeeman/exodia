@@ -1,0 +1,26 @@
+# One-file pipeline — what each store holds
+
+Interactive walkthrough: [`../ui/pipeline.html`](../ui/pipeline.html) (EN / עב).
+
+Example: `hangar.mp4`, 2 GB, **8 parts** of 256 MB, **3 in flight**. Same design as 100 parts — only the `upload_part` row count changes.
+
+| Step | What happens | Postgres | Redis | S3 | OpenSearch / SQS |
+|---|---|---|---|---|---|
+| 0 Before | File chosen, Start not pressed | 0 rows for this file | empty | no object | empty |
+| 1 Intent | JSON to API, MPU opened | 1 asset `draft` + 1 object + 1 user_metadata + 1 session. **0 parts** | **1 key** `progress:upl_99` pct=0 | uploadId `mpu_X`, 0 parts stored | empty |
+| 2 In flight | PUT parts 1–3 to S3 | unchanged | unchanged | 3 PUTs in the air | empty |
+| 3 Part 2 lands first | Out of order is fine | **1** `upload_part` row (part 2). asset → `uploading` | same 1 key, pct=13 | part 2 stored | empty |
+| 4 Parts 1 and 3 land | Start parts 4–6 | **3** part rows | same 1 key, pct=38 | 1–3 stored, 4–6 in flight | empty |
+| 5 All 8 parts | Transfer done | **8** part rows. session still `open` | pct=100 | 8 staging parts. **GET file = missing** | empty |
+| 6 Seal | CompleteMultipart | asset → `uploaded`. session `complete`. 8 part rows stay | **key deleted** | **one 2 GB object** | 1 tiny SQS message. no search doc |
+| 7 Detect | Range GET 64 KB | 1 `technical_metadata` (detect). state `enriching` | idle | 64 KB read, not 2 GB | message in flight |
+| 8 Extract | ffprobe header | 2 technical rows (detect + ffprobe). user_metadata untouched | idle | small range | no search doc |
+| 9 Derive | One poster frame | 1 `derived_artifact` | idle | + 200 KB poster. raw 2 GB unchanged | no search doc |
+| 10 Index | Browse works | asset → `ready`. ~16 rows total for this file | 0 keys | raw + poster | **1 search document**. SQS deleted |
+
+Counts to say out loud:
+
+- Redis never has 8 keys. It has **one** key, overwritten, then deleted.
+- Postgres catalog is **4 rows** at Start, plus **one row per finished part**.
+- Enrichment does **not** download 2 GB. Headers and one frame only.
+- The file is downloadable from **step 6**, before enrichment.
